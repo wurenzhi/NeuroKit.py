@@ -644,7 +644,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
         hrv["Entropy_Spectral_HF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.15, 0.40, 0.001))
         hrv["Fisher_Info"] = complexity_fisher_info(RRis, tau=1, emb_dim=2)
         try:  # Otherwise travis errors for some reasons :(
-            hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis, emb_dim=58, matrix_dim=4))
+            hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis.values, emb_dim=58, matrix_dim=4))
         except Exception:
             hrv["Lyapunov"] = np.nan
         hrv["FD_Petrosian"] = complexity_fd_petrosian(RRis)

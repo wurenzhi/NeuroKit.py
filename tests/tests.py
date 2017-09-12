@@ -117,7 +117,7 @@ def test_bio_process():
     else:  # If local
         ecg_quality_model = "default"
 
-    bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"], ecg_quality_model=ecg_quality_model, age=24, sex="m", position="supine")
+    bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], ecg_sampling_rate=100, add=df["Photosensor"], ecg_quality_model=ecg_quality_model, age=24, sex="m", position="supine")
 
     assert len(bio) == 4
     return(bio)
