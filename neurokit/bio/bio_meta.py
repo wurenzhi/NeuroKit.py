@@ -16,7 +16,7 @@ from .bio_emg import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_process(ecg=None, rsp=None, eda=None, emg=None, add=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_filter_type="FIR", ecg_filter_band="bandpass", ecg_filter_frequency=[3, 45], ecg_segmenter="hamilton", ecg_quality_model="default", ecg_hrv_features=["time", "frequency", "nonlinear"], eda_alpha=8e-4, eda_gamma=1e-2, scr_method="makowski", scr_treshold=0.1, emg_names=None, emg_envelope_freqs=[10, 400], emg_envelope_lfreq=4, emg_activation_treshold="default", emg_activation_n_above=0.25, emg_activation_n_below=1):
+def bio_process(ecg=None, rsp=None, eda=None, emg=None, add=None, ecg_sampling_rate=1000, rsp_sampling_rate=1000, eda_sampling_rate=1000 , emg_sampling_rate=1000, age=None, sex=None, position=None, ecg_filter_type="FIR", ecg_filter_band="bandpass", ecg_filter_frequency=[3, 45], ecg_segmenter="hamilton", ecg_quality_model="default", ecg_hrv_features=["time", "frequency", "nonlinear"], eda_alpha=8e-4, eda_gamma=1e-2, scr_method="makowski", scr_treshold=0.1, emg_names=None, emg_envelope_freqs=[10, 400], emg_envelope_lfreq=4, emg_activation_treshold="default", emg_activation_n_above=0.25, emg_activation_n_below=1):
     """
     Automated processing of bio signals. Wrapper for other bio processing functions.
 
@@ -117,32 +117,35 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, add=None, sampling_rate=
     - Kim, K. H., Bang, S. W., & Kim, S. R. (2004). Emotion recognition system using short-term monitoring of physiological signals. Medical and biological engineering and computing, 42(3), 419-427.
     - Gamboa, H. (2008). Multi-Modal Behavioral Biometrics Based on HCI and Electrophysiology (Doctoral dissertation, PhD thesis, Universidade Técnica de Lisboa, Instituto Superior Técnico).
     """
+
+
+
     processed_bio = {}
     bio_df = pd.DataFrame({})
 
     # ECG & RSP
     if ecg is not None:
-        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, filter_type=ecg_filter_type, filter_band=ecg_filter_band, filter_frequency=ecg_filter_frequency, segmenter=ecg_segmenter, quality_model=ecg_quality_model, hrv_features=ecg_hrv_features, age=age, sex=sex, position=position)
+        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=ecg_sampling_rate, filter_type=ecg_filter_type, filter_band=ecg_filter_band, filter_frequency=ecg_filter_frequency, segmenter=ecg_segmenter, quality_model=ecg_quality_model, hrv_features=ecg_hrv_features, age=age, sex=sex, position=position)
         processed_bio["ECG"] = ecg["ECG"]
         if rsp is not None:
             processed_bio["RSP"] = ecg["RSP"]
         bio_df = pd.concat([bio_df, ecg["df"]], axis=1)
 
     if rsp is not None and ecg is None:
-        rsp = rsp_process(rsp=rsp, sampling_rate=sampling_rate)
+        rsp = rsp_process(rsp=rsp, sampling_rate=rsp_sampling_rate)
         processed_bio["RSP"] = rsp["RSP"]
         bio_df = pd.concat([bio_df, rsp["df"]], axis=1)
 
 
     # EDA
     if eda is not None:
-        eda = eda_process(eda=eda, sampling_rate=sampling_rate, alpha=eda_alpha, gamma=eda_gamma, scr_method=scr_method, scr_treshold=scr_treshold)
+        eda = eda_process(eda=eda, sampling_rate=eda_sampling_rate, alpha=eda_alpha, gamma=eda_gamma, scr_method=scr_method, scr_treshold=scr_treshold)
         processed_bio["EDA"] = eda["EDA"]
         bio_df = pd.concat([bio_df, eda["df"]], axis=1)
 
     # EMG
     if emg is not None:
-        emg = emg_process(emg=emg, sampling_rate=sampling_rate, emg_names=emg_names, envelope_freqs=emg_envelope_freqs, envelope_lfreq=emg_envelope_lfreq, activation_treshold=emg_activation_treshold, activation_n_above=emg_activation_n_above, activation_n_below=emg_activation_n_below)
+        emg = emg_process(emg=emg, sampling_rate=emg_sampling_rate, emg_names=emg_names, envelope_freqs=emg_envelope_freqs, envelope_lfreq=emg_envelope_lfreq, activation_treshold=emg_activation_treshold, activation_n_above=emg_activation_n_above, activation_n_below=emg_activation_n_below)
         bio_df = pd.concat([bio_df, emg.pop("df")], axis=1)
         for i in emg:
             processed_bio[i] = emg[i]
