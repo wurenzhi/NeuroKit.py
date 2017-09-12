@@ -34,7 +34,7 @@ A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, E
 Run the following:
 
 ```bash
-pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
+pip install https://github.com/wurenzhi/NeuroKit.py/zipball/master
 ```
 
 Not working? [Check this out](http://neurokit.readthedocs.io/en/latest/tutorials/Python.html)!
