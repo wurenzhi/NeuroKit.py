@@ -584,6 +584,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
           "VHF": [0.4, 0.5]}
 
 
+
         # Frequency-Domain Power over time
         freq_powers = {}
         for band in freq_bands:
@@ -603,9 +604,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
         # Compute Power Spectral Density (PSD) using multitaper method
         power, freq = mne.time_frequency.psd_array_multitaper(RRi, sfreq=sampling_rate, fmin=0, fmax=0.5,  adaptive=False, normalization='length')
 
-        def power_in_band(power, freq, band):
-            power =  np.trapz(y=power[(freq >= band[0]) & (freq < band[1])], x=freq[(freq >= band[0]) & (freq < band[1])])
-            return(power)
+
 
         # Extract Power according to frequency bands
         hrv["ULF"] = power_in_band(power, freq, freq_bands["ULF"])
