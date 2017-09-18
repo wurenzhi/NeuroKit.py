@@ -69,3 +69,8 @@ def discrete_to_continuous(values, value_times, sampling_rate=1000):
     signal.index = np.array(np.arange(initial_index, initial_index+len(signal), 1))
 
     return(signal)
+
+
+def power_in_band(power, freq, band):
+    power = np.trapz(y=power[(freq >= band[0]) & (freq < band[1])], x=freq[(freq >= band[0]) & (freq < band[1])])
+    return (power)
