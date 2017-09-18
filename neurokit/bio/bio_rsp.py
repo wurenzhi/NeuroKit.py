@@ -5,6 +5,8 @@ Subsubmodule for ecg processing.
 import numpy as np
 import pandas as pd
 import biosppy
+import mne
+import scipy
 
 from ..signal import *
 
@@ -61,8 +63,7 @@ def rsp_process(rsp, sampling_rate=1000):
     biosppy_rsp = dict(biosppy.signals.resp.resp(rsp, sampling_rate=sampling_rate, show=False))
     processed_rsp["df"]["RSP_Filtered"] = biosppy_rsp["filtered"]
 
-
-#   RSP Rate
+            #   RSP Rate
 #   ============
     rsp_rate = biosppy_rsp["resp_rate"]*60  # Get RSP rate value (in cycles per minute)
     rsp_times = biosppy_rsp["resp_rate_ts"]   # the time (in sec) of each rsp rate value
@@ -75,7 +76,54 @@ def rsp_process(rsp, sampling_rate=1000):
         processed_rsp["df"]["RSP_Rate"] = np.nan
 
 
-#   RSP Cycles
+
+        # psd powers
+    #   ============
+    window_size_psd = 300
+    freq_bands = {
+        "0_0.1": [0.0001, 0.1],
+        "0.1_0.2": [0.1, 0.2],
+        "0.2_0.3": [0.2, 0.3],
+        "0.3_0.4": [0.3, 0.4],
+        "0.4_0.5": [0.4, 0.5]}
+
+
+
+    for col in freq_bands:  # initialize columns to nan
+        processed_rsp["df"][col] = np.nan
+
+
+    for i in range(len(rsp)):
+        if window_size_psd <= i :
+            power, freq = mne.time_frequency.psd_array_multitaper(rsp[i - window_size_psd:i+window_size_psd], sfreq=sampling_rate, fmin=0,
+                                                                  fmax=0.5, adaptive=False,
+                                                                  normalization='length')
+            for band in freq_bands:
+                processed_rsp["df"].set_value(col=band,index=i,value=power_in_band(power, freq, freq_bands[band]))
+
+# statistical features
+#   ============
+    window_size_statistics = 300
+    statistics_features = ['SEM', 'MFD', 'SDFD', 'MSD', 'SDSD', 'SDBA', 'MAXRSP', 'MINRSP', 'DMMRSP','Skewness', 'Kurtosis']
+    for col in statistics_features:  # initialize columns to nan
+        processed_rsp["df"][col] = np.nan
+    for i in range(len(rsp)):
+        if window_size_statistics <= i :
+            data_rspr = processed_rsp['df']['RSP_Rate'][i - window_size_statistics :i]
+            data_waveform = rsp[i - window_size_statistics:i]
+            processed_rsp["df"].set_value(col='SEM', index=i, value=np.std(data_rspr) / np.sqrt(window_size_statistics))
+            processed_rsp["df"].set_value(col='MFD', index=i, value=np.mean(np.diff(data_rspr)))
+            processed_rsp["df"].set_value(col='SDFD', index=i, value=np.std(np.diff(data_rspr)))
+            processed_rsp["df"].set_value(col='MSD', index=i, value=np.mean(np.diff(data_rspr, 2)))
+            processed_rsp["df"].set_value(col='SDSD', index=i, value=np.std(np.diff(data_rspr, 2)))
+            processed_rsp['df'].set_value(col='SDBA',index=i, value=np.std(data_waveform))
+            processed_rsp['df'].set_value(col='MAXRSP', index=i, value=np.max(data_waveform))
+            processed_rsp['df'].set_value(col='MINRSP', index=i, value=np.min(data_waveform))
+            processed_rsp['df'].set_value(col='DMMRSP', index=i, value= processed_rsp['df']['MAXRSP'] - processed_rsp['df']['MINRSP'])
+            processed_rsp['df'].set_value(col='Skewness', index=i, value=scipy.stats.skew(data_rspr))
+            processed_rsp['df'].set_value(col='Kurtosis', index=i, value=scipy.stats.kurtosis(data_rspr))
+    
+    #   RSP Cycles
 #   ===========================
     rsp_cycles = rsp_find_cycles(biosppy_rsp["filtered"])
     processed_rsp["df"]["RSP_Inspiration"] = rsp_cycles["RSP_Inspiration"]
@@ -93,6 +141,7 @@ def rsp_process(rsp, sampling_rate=1000):
     processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_SD"] = np.std(rsp_diff)
     processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_RMSSD"] = np.sqrt(np.mean(rsp_diff ** 2))
     processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_RMSSD_Log"] = np.log(processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_RMSSD"])
+
 
 
     return(processed_rsp)
