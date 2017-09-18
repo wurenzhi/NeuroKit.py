@@ -129,5 +129,4 @@ def plot_polarbar(scores, labels=None, labels_size=15, colors="default", distrib
         for index, bar in enumerate(bars2):
             bar.set_facecolor("#607D8B")
             bar.set_alpha(0.3)
-
     return(plot)
