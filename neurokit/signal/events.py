@@ -251,7 +251,7 @@ def plot_events_in_signal(signal, events, color=u"red"):
     ----------
     >>> import neurokit as nk
     >>> df = nk.bio_process(ecg=signal, sampling_rate=1000)
-    >>> events = df["ECG"]["Rpeaks"]
+    >>> events = df["ECG"]["R_Peaks"]
     >>> plot_events_in_signal(signal, events)
 
     Notes
