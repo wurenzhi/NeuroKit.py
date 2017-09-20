@@ -7,7 +7,7 @@ import pandas as pd
 import neurokit as nk
 
 
-run_tests_in_local = True
+run_tests_in_local = False
 
 
 #==============================================================================

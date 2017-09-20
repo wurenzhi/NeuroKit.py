@@ -98,8 +98,8 @@ def rsp_process(rsp, sampling_rate=1000):
 
 # statistical features
 #   ============
-    data_rspr = processed_rsp['df']['RSP_Rate']
-    data_waveform = rsp
+    data_rspr = processed_rsp['df']['RSP_Rate'].dropna()
+    data_waveform = rsp.dropna()
     processed_rsp["RSP"]["statistics"] = {}
     processed_rsp["RSP"]["statistics"]['SEM']=np.std(data_rspr) / np.sqrt(len(data_rspr))
     processed_rsp["RSP"]["statistics"]['MFD']=np.mean(np.diff(data_rspr))
