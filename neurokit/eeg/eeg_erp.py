@@ -1,6 +1,7 @@
-"""
+u"""
 ERP analysis EEG submodule.
 """
+from __future__ import absolute_import
 from .eeg_data import eeg_select_electrodes
 from .eeg_data import eeg_to_df
 from .eeg_data import eeg_to_all_evokeds
@@ -21,8 +22,8 @@ import mne
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_erp(eeg, times=None, index=None, include="all", exclude=None, hemisphere="both", central=True, verbose=True, names="ERP"):
-    """
+def eeg_erp(eeg, times=None, index=None, include=u"all", exclude=None, hemisphere=u"both", central=True, verbose=True, names=u"ERP"):
+    u"""
     DOCS INCOMPLETE :(
     """
     erp = {}
@@ -56,8 +57,8 @@ def eeg_erp(eeg, times=None, index=None, include="all", exclude=None, hemisphere
             erp[epoch_index] = [value]
 
     # Convert to dataframe
-    erp = pd.DataFrame.from_dict(erp, orient="index")
-    if isinstance(names, str):
+    erp = pd.DataFrame.from_dict(erp, orient=u"index")
+    if isinstance(names, unicode):
         names = [names]
     if len(names) == len(erp.columns):
         erp.columns = names
@@ -73,8 +74,8 @@ def eeg_erp(eeg, times=None, index=None, include="all", exclude=None, hemisphere
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def plot_eeg_erp(all_epochs, conditions=None, times=None, include="all", exclude=None, hemisphere="both", central=True, name=None, colors=None, gfp=False, ci=0.95, ci_alpha=0.333, invert_y=False, linewidth=1, linestyle="-", filter_hfreq=None):
-    """
+def plot_eeg_erp(all_epochs, conditions=None, times=None, include=u"all", exclude=None, hemisphere=u"both", central=True, name=None, colors=None, gfp=False, ci=0.95, ci_alpha=0.333, invert_y=False, linewidth=1, linestyle=u"-", filter_hfreq=None):
+    u"""
     DOCS INCOMPLETE :(
     """
     # Preserve original
@@ -106,33 +107,33 @@ def plot_eeg_erp(all_epochs, conditions=None, times=None, include="all", exclude
     conditions = list(data.keys())
 
     # Line styles
-    if isinstance(linestyle, str):
+    if isinstance(linestyle, unicode):
         linestyle = [linestyle] * len(conditions)
     elif isinstance(linestyle, list) and len(linestyle) >= len(conditions):
         pass
     elif isinstance(linestyle, dict) and len(linestyle.keys()) >= len(conditions):
         linestyle = [linestyle[cond] for cond in conditions]
     else:
-        print("NeuroKit Warning: plot_eeg_erp(): linestyle must be either a str, a list or a dict.")
+        print u"NeuroKit Warning: plot_eeg_erp(): linestyle must be either a str, a list or a dict."
 
 
     # Colors
-    if isinstance(colors, str):
-        colors = {condition: colors for condition in conditions}
+    if isinstance(colors, unicode):
+        colors = dict((condition, colors) for condition in conditions)
     elif isinstance(colors, list) and len(colors) >= len(conditions):
-        colors=  {condition: colors[index] for index, condition in enumerate(conditions)}
+        colors=  dict((condition, colors[index]) for index, condition in enumerate(conditions))
     elif isinstance(colors, dict) and len(colors.keys()) >= len(conditions):
         pass
     elif colors is None:
         pass
     else:
-        print("NeuroKit Warning: plot_eeg_erp(): colors must be either a str, a list, a dict or None.")
+        print u"NeuroKit Warning: plot_eeg_erp(): colors must be either a str, a list, a dict or None."
 
 
     # Modify styles
     styles = {}
     for index, condition in enumerate(conditions):
-        styles[condition] = {"linewidth": linewidth, "linestyle": linestyle[index]}
+        styles[condition] = {u"linewidth": linewidth, u"linestyle": linestyle[index]}
 
 
     # Select electrodes
@@ -142,7 +143,7 @@ def plot_eeg_erp(all_epochs, conditions=None, times=None, include="all", exclude
     try:
         plot = mne.viz.plot_compare_evokeds(data, picks=picks, colors=colors, styles=styles, title=name, gfp=gfp, ci=ci, invert_y=invert_y, ci_alpha=ci_alpha)
     except TypeError:
-        print("NeuroKit Warning: plot_eeg_erp(): You're using a version of mne that does not support ci_alpha or ci_method parameters. Leaving defaults.")
+        print u"NeuroKit Warning: plot_eeg_erp(): You're using a version of mne that does not support ci_alpha or ci_method parameters. Leaving defaults."
         plot = mne.viz.plot_compare_evokeds(data, picks=picks, colors=colors, styles=styles, title=name, gfp=gfp, ci=ci, invert_y=invert_y)
 
     return(plot)
@@ -160,7 +161,7 @@ def plot_eeg_erp(all_epochs, conditions=None, times=None, include="all", exclude
 # ==============================================================================
 # ==============================================================================
 def plot_eeg_erp_topo(all_epochs, colors=None):
-    """
+    u"""
     Plot butterfly plot.
 
     DOCS INCOMPLETE :(
@@ -188,7 +189,7 @@ def plot_eeg_erp_topo(all_epochs, colors=None):
         if colors is not None:
             color_list.append(colors[condition])
 
-    plot = mne.viz.plot_evoked_topo(evokeds, background_color="w", color=color_list)
+    plot = mne.viz.plot_evoked_topo(evokeds, background_color=u"w", color=color_list)
     return(plot)
 
 

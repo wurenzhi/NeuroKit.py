@@ -1,7 +1,8 @@
-"""
+u"""
 bio submodule.
 """
 
+from __future__ import absolute_import
 from .bio_data import *
 from .bio_rsp import *
 from .bio_ecg_preprocessing import *

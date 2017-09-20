@@ -1,7 +1,8 @@
-"""
+u"""
 neurokit module.
 """
-__version__ = "0.2.0"
+from __future__ import absolute_import
+__version__ = u"0.2.0"
 
 from .miscellaneous import *
 from .statistics import *

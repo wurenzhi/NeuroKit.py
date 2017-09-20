@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import pandas as pd
 import numpy as np
 import scipy
@@ -19,7 +20,7 @@ import scipy
 # ==============================================================================
 # ==============================================================================
 def discrete_to_continuous(values, value_times, sampling_rate=1000):
-    """
+    u"""
     3rd order spline interpolation.
 
     Parameters

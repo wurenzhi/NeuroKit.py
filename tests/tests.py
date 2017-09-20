@@ -1,8 +1,10 @@
+from __future__ import absolute_import
 import pytest
 import doctest
 import numpy as np
 import pandas as pd
 import neurokit as nk
+import os
 
 run_tests_in_local = False
 
@@ -31,10 +33,10 @@ def test_normal_range():
 #==============================================================================
 def test_compute_dprime():
     parameters = nk.compute_dprime(n_Hit=7, n_Miss=4, n_FA=6, n_CR=6)
-    assert np.round(parameters["bppd"], 2) == -0.5
+    assert np.round(parameters[u"bppd"], 2) == -0.5
 
 def test_compute_BMI():
-    assert round(nk.compute_BMI(182, 70, 27, "m")['BMI_old'], 2) == 21.13
+    assert round(nk.compute_BMI(182, 70, 27, u"m")[u'BMI_old'], 2) == 21.13
 
 def test_compute_interoceptive_accuracy():
     assert nk.compute_interoceptive_accuracy(5, 3) == 0.5
@@ -52,16 +54,16 @@ def test_compute_interoceptive_accuracy():
 
 def test_save_nk():
     obj = [1, 2]
-    nk.save_nk_object(obj, filename="myobject")
-    obj = nk.read_nk_object("myobject.nk")
+    nk.save_nk_object(obj, filename=u"myobject")
+    obj = nk.read_nk_object(u"myobject.nk")
 
 
 def test_get_creation_date():
 
     if run_tests_in_local is False:
-        data_path = os.getcwd() + r"/tests/data/test_bio_data.acq"  # If running from travis
+        data_path = os.getcwdu() + ur"/data/test_bio_data.acq"  # If running from travis
     else:
-        data_path = "data/test_bio_data.acq"  # If running in local
+        data_path = u"data/test_bio_data.acq"  # If running in local
 
     creation_date = nk.find_creation_date(data_path)
     assert isinstance(creation_date, float)
@@ -70,7 +72,7 @@ def test_get_creation_date():
 # miscellaenous
 #==============================================================================
 def test_find_following_duplicates():
-    array = ["a","a","b","a","a","a","c","c","b","b"]
+    array = [u"a",u"a",u"b",u"a",u"a",u"a",u"c",u"c",u"b",u"b"]
     first = nk.find_following_duplicates(array)[0]
     assert first == True
 
@@ -94,15 +96,15 @@ def test_find_closest_in_list():
 def test_read_acqknowledge():
 
     if run_tests_in_local is False:
-        data_path = os.getcwd() + r"/tests/data/test_bio_data.acq"  # If running from travis
+        data_path = os.getcwdu() + ur"/data/test_bio_data.acq"  # If running from travis
     else:
-        data_path = "data/test_bio_data.acq"  # If running in local
+        data_path = u"data/test_bio_data.acq"  # If running in local
 
     # Read data
     df, sampling_rate = nk.read_acqknowledge(data_path, return_sampling_rate=True)
     # Resample to 100Hz
-    df = df.resample("10L").mean()
-    df.columns = ['ECG', 'EDA', 'PPG', 'Photosensor', 'RSP']
+    df = df.resample(u"10L").mean()
+    df.columns = [u'ECG', u'EDA', u'PPG', u'Photosensor', u'RSP']
     # Check length
     assert len(df) == 35645
     return(df)
@@ -113,11 +115,11 @@ def test_bio_process():
     df = test_read_acqknowledge()
 
     if run_tests_in_local is False:  # If travis
-        ecg_quality_model = os.getcwd() + r"/neurokit/materials/heartbeat_classification.model"
+        ecg_quality_model = os.path.abspath('..') + ur"/neurokit/materials/heartbeat_classification.model"
     else:  # If local
-        ecg_quality_model = "default"
+        ecg_quality_model = u"default"
 
-    bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], ecg_sampling_rate=100, add=df["Photosensor"], ecg_quality_model=ecg_quality_model, age=24, sex="m", position="supine")
+    bio = nk.bio_process(ecg=df[u"ECG"], rsp=df[u"RSP"], eda=df[u"EDA"], ecg_sampling_rate=100, add=df[u"Photosensor"], ecg_quality_model=ecg_quality_model, age=24, sex=u"m", position=u"supine")
 
     assert len(bio) == 4
     return(bio)
@@ -126,7 +128,7 @@ def test_bio_process():
     
     
     
-if __name__ == '__main__':
+if __name__ == u'__main__':
     pytest.main()
     doctest.testmod()
 

@@ -1,10 +1,12 @@
+from __future__ import absolute_import
 from setuptools import setup, find_packages
 import re
+from io import open
 
 
 # ------------------
 def find_version():
-    result = re.search(r'{}\s*=\s*[\'"]([^\'"]*)[\'"]'.format("__version__"), open('neurokit/__init__.py').read())
+    result = re.search(ur'{}\s*=\s*[\'"]([^\'"]*)[\'"]'.format(u"__version__"), open(u'neurokit/__init__.py').read())
     return result.group(1)
 # ------------------
 
@@ -12,48 +14,47 @@ def find_version():
 
 # ------------------
 setup(
-name = "neurokit",
-description = ("A Python Toolbox for Statistics and Signal Processing (EEG, EDA, ECG, EMG...)."),
+name = u"neurokit",
+description = (u"A Python Toolbox for Statistics and Signal Processing (EEG, EDA, ECG, EMG...)."),
 version = find_version(),
-license = "MIT",
-author = "Dominique Makowski",
-author_email = "dom.makowski@gmail.com",
-maintainer = "Dominique Makowski",
-maintainer_email = "dom.makowski@gmail.com",
+license = u"MIT",
+author = u"Dominique Makowski",
+author_email = u"dom.makowski@gmail.com",
+maintainer = u"Dominique Makowski",
+maintainer_email = u"dom.makowski@gmail.com",
 packages = find_packages(),
 package_data = {
-        "neurokit.materials":["*.model"]},
+        u"neurokit.materials":[u"*.model"]},
 install_requires = [
-        'numpy',
-        'pandas',
-        'scipy',
-        'sklearn',
-        'matplotlib',
-        'mne',
-        'bioread',
-        'nolds',
-        'biosppy',
-        'Pillow',
-        'cvxopt'],
+        u'numpy',
+        u'pandas',
+        u'scipy',
+        u'sklearn',
+        u'matplotlib',
+        u'mne',
+        u'bioread',
+        u'nolds',
+        u'biosppy',
+        u'Pillow',
+        u'cvxopt'],
 dependency_links=[],
-long_description = open('README.md').read(),
-keywords = "python signal processing EEG EDA ECG hrv rpeaks biosignals complexity",
-url = "https://github.com/neuropsychology/NeuroKit.py",
-download_url = 'https://github.com/neuropsychology/NeuroKit.py/tarball/master',
-test_suite="nose.collector",
+long_description = open(u'README.md').read(),
+keywords = u"python signal processing EEG EDA ECG hrv rpeaks biosignals complexity",
+url = u"https://github.com/neuropsychology/NeuroKit.py",
+download_url = u'https://github.com/neuropsychology/NeuroKit.py/tarball/master',
+test_suite=u"nose.collector",
 tests_require=[
-        'pytest',
-        'nose',
-        'coverage'],
+        u'pytest',
+        u'nose',
+        u'coverage'],
 classifiers = [
-        'Intended Audience :: Science/Research',
-        'Intended Audience :: Developers',
-        'Programming Language :: Python',
-        'Topic :: Software Development',
-        'Topic :: Scientific/Engineering',
-        'Operating System :: Microsoft :: Windows',
-        'Operating System :: Unix',
-        'Operating System :: MacOS',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6']
+        u'Intended Audience :: Science/Research',
+        u'Intended Audience :: Developers',
+        u'Programming Language :: Python',
+        u'Topic :: Software Development',
+        u'Topic :: Scientific/Engineering',
+        u'Operating System :: Microsoft :: Windows',
+        u'Operating System :: Unix',
+        u'Operating System :: MacOS',
+        u'Programming Language :: Python :: 2.7']
 )

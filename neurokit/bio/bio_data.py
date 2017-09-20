@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
+from __future__ import absolute_import
 import pandas as pd
 import numpy as np
 import os
@@ -18,8 +20,8 @@ from ..miscellaneous import find_creation_date
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def read_acqknowledge(filename, path="", index="datetime", sampling_rate="max", resampling_method="pad", fill_interruptions=True, return_sampling_rate=False):
-    """
+def read_acqknowledge(filename, path=u"", index=u"datetime", sampling_rate=u"max", resampling_method=u"pad", fill_interruptions=True, return_sampling_rate=False):
+    u"""
     Read and Format a BIOPAC's AcqKnowledge file into a pandas' dataframe.
 
     Parameters
@@ -73,10 +75,10 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate="max", 
 
     # Check path
     file = path + filename
-    if ".acq" not in file:
-        file += ".acq"
+    if u".acq" not in file:
+        file += u".acq"
     if os.path.exists(file) is False:
-        print("NeuroKit Error: read_acqknowledge(): couldn't find the following file: " + filename)
+        print u"NeuroKit Error: read_acqknowledge(): couldn't find the following file: " + filename
         return()
 
     # Convert creation date
@@ -129,33 +131,33 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate="max", 
         df2 = pd.DataFrame(data_else)
 
     # Create resampling factor
-    if sampling_rate == "max":
+    if sampling_rate == u"max":
         sampling_rate = max(freq_list)
 
     try:
-        resampling_factor = str(int(1000/sampling_rate)) + "L"
+        resampling_factor = unicode(int(1000/sampling_rate)) + u"L"
     except TypeError:
-        print("NeuroKit Warning: read_acqknowledge(): sampling_rate must be either num or 'max'. Setting to 'max'.")
+        print u"NeuroKit Warning: read_acqknowledge(): sampling_rate must be either num or 'max'. Setting to 'max'."
         sampling_rate = max(freq_list)
-        resampling_factor = str(int(1000/sampling_rate)) + "L"
+        resampling_factor = unicode(int(1000/sampling_rate)) + u"L"
 
 
     # Resample
-    if resampling_method not in ["mean", "bfill", "pad"]:
-        print("NeuroKit Warning: read_acqknowledge(): resampling_factor must be 'mean', 'bfill' or 'pad'. Setting to 'pad'.")
-        resampling_method = 'pad'
+    if resampling_method not in [u"mean", u"bfill", u"pad"]:
+        print u"NeuroKit Warning: read_acqknowledge(): resampling_factor must be 'mean', 'bfill' or 'pad'. Setting to 'pad'."
+        resampling_method = u'pad'
 
-    if resampling_method == "mean":
+    if resampling_method == u"mean":
         if len(data_else.keys()) > 0:
             df2 = df2.resample(resampling_factor).mean()
         if int(sampling_rate) != int(max(freq_list)):
             df = df.resample(resampling_factor).mean()
-    if resampling_method == "bfill":
+    if resampling_method == u"bfill":
         if len(data_else.keys()) > 0:
             df2 = df2.resample(resampling_factor).bfill()
         if int(sampling_rate) != int(max(freq_list)):
             df = df.resample(resampling_factor).bfill()
-    if resampling_method == "pad":
+    if resampling_method == u"pad":
         if len(data_else.keys()) > 0:
             df2 = df2.resample(resampling_factor).pad()
         if int(sampling_rate) != int(max(freq_list)):
@@ -167,15 +169,15 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate="max", 
     if len(data_else.keys()) > 0:
         df = pd.concat([df, df2], 1)
 
-    if index == "range":
+    if index == u"range":
         df = df.reset_index()
 
     # Fill signal interruptions
     if fill_interruptions is True:
-        df = df.fillna(method="backfill")
+        df = df.fillna(method=u"backfill")
 
     if return_sampling_rate is False:
-        print("NeuroKit Warning: read_acqknowledge(): return_sampling_rate default will be changed to True in the future. We recommend that you change it explicitely to True from now on to avoid conflicts with future versions.")
+        print u"NeuroKit Warning: read_acqknowledge(): return_sampling_rate default will be changed to True in the future. We recommend that you change it explicitely to True from now on to avoid conflicts with future versions."
         return(df)
     else:
         return(df, sampling_rate)

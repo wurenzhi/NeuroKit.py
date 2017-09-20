@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import pandas as pd
 import numpy as np
 
@@ -12,7 +13,7 @@ import numpy as np
 # ==============================================================================
 # ==============================================================================
 def create_epochs(data, events_onsets, sampling_rate=1000, duration=1, onset=0, index=None):
-    """
+    u"""
     Epoching a dataframe.
 
     Parameters
@@ -73,11 +74,11 @@ def create_epochs(data, events_onsets, sampling_rate=1000, duration=1, onset=0, 
 
     # Create the index
     if index is None:
-        index = list(range(len(events_onsets)))
+        index = range(len(events_onsets))
     else:
         if len(list(set(index))) != len(index):
-            print("NeuroKit Warning: create_epochs(): events_names does not contain uniques names, replacing them by numbers.")
-            index = list(range(len(events_onsets)))
+            print u"NeuroKit Warning: create_epochs(): events_names does not contain uniques names, replacing them by numbers."
+            index = range(len(events_onsets))
         else:
             index = list(index)
 
@@ -96,8 +97,8 @@ def create_epochs(data, events_onsets, sampling_rate=1000, duration=1, onset=0, 
         relative_time = np.linspace(start=onset[event], stop=duration[event], num=len(epoch), endpoint=True).astype(int).tolist()
         absolute_time = np.linspace(start=epoch_onset, stop=epoch_end, num=len(epoch), endpoint=True).astype(int).tolist()
 
-        epoch["Epoch_Relative_Time"] = relative_time
-        epoch["Epoch_Absolute_Time"] = absolute_time
+        epoch[u"Epoch_Relative_Time"] = relative_time
+        epoch[u"Epoch_Absolute_Time"] = absolute_time
 
         epochs[index[event]] = epoch
 

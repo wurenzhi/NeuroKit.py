@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import pytest
 import doctest
 import numpy as np
@@ -16,16 +17,16 @@ run_tests_in_local = False
 
 def test_save_nk():
     obj = [1, 2]
-    nk.save_nk_object(obj, filename="myobject")
-    obj = nk.read_nk_object("myobject.nk")
+    nk.save_nk_object(obj, filename=u"myobject")
+    obj = nk.read_nk_object(u"myobject.nk")
 
 
 def test_get_creation_date():
 
     if run_tests_in_local is False:
-        data_path = os.getcwd() + r"/tests/data/test_bio_data.acq"  # If running from travis
+        data_path = os.getcwdu() + ur"/data/test_bio_data.acq"  # If running from travis
     else:
-        data_path = "data/test_bio_data.acq"  # If running in local
+        data_path = u"data/test_bio_data.acq"  # If running in local
 
     creation_date = nk.find_creation_date(data_path)
     assert isinstance(creation_date, float)
@@ -34,7 +35,7 @@ def test_get_creation_date():
 # miscellaenous
 #==============================================================================
 def test_find_following_duplicates():
-    array = ["a","a","b","a","a","a","c","c","b","b"]
+    array = [u"a",u"a",u"b",u"a",u"a",u"a",u"c",u"c",u"b",u"b"]
     first = nk.find_following_duplicates(array)[0]
     assert first == True
 
@@ -51,7 +52,7 @@ def test_find_closest_in_list():
 
 
 
-if __name__ == '__main__':
+if __name__ == u'__main__':
 #    nose.run(defaultTest=__name__)
     doctest.testmod()
     pytest.main()

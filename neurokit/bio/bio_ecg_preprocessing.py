@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
+u"""
 Subsubmodule for ecg processing.
 """
+from __future__ import division
+from __future__ import absolute_import
 import numpy as np
 import pandas as pd
 import biosppy
@@ -21,8 +23,8 @@ from ..statistics import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45], filter_order=0.3, segmenter="hamilton"):
-    """
+def ecg_preprocess(ecg, sampling_rate=1000, filter_type=u"FIR", filter_band=u"bandpass", filter_frequency=[3, 45], filter_order=0.3, segmenter=u"hamilton"):
+    u"""
     ECG signal preprocessing.
 
     Parameters
@@ -89,7 +91,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     sampling_rate = float(sampling_rate)
 
     # Filter signal
-    if filter_type in ["FIR", "butter", "cheby1", "cheby2", "ellip", "bessel"]:
+    if filter_type in [u"FIR", u"butter", u"cheby1", u"cheby2", u"ellip", u"bessel"]:
         order = int(filter_order * sampling_rate)
         filtered, _, _ = biosppy.tools.filter_signal(signal=ecg,
                                           ftype=filter_type,
@@ -101,17 +103,17 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
         filtered = ecg  # filtered is not-filtered
 
     # Segment
-    if segmenter == "hamilton":
+    if segmenter == u"hamilton":
         rpeaks, = biosppy.ecg.hamilton_segmenter(signal=filtered, sampling_rate=sampling_rate)
-    elif segmenter == "gamboa":
+    elif segmenter == u"gamboa":
         rpeaks, = biosppy.ecg.gamboa_segmenter(signal=filtered, sampling_rate=sampling_rate, tol=0.002)
-    elif segmenter == "engzee":
+    elif segmenter == u"engzee":
         rpeaks, = biosppy.ecg.engzee_segmenter(signal=filtered, sampling_rate=sampling_rate, threshold=0.48)
-    elif segmenter == "christov":
+    elif segmenter == u"christov":
         rpeaks, = biosppy.ecg.christov_segmenter(signal=filtered, sampling_rate=sampling_rate)
-    elif segmenter == "ssf":
+    elif segmenter == u"ssf":
         rpeaks, = biosppy.ecg.ssf_segmenter(signal=filtered, sampling_rate=sampling_rate, threshold=20, before=0.03, after=0.01)
-    elif segmenter == "pekkanen":
+    elif segmenter == u"pekkanen":
         rpeaks = segmenter_pekkanen(signal=filtered, sampling_rate=sampling_rate, window_size=5.0, lfreq=5.0, hfreq=15.0)
     else:
         rpeaks, = biosppy.ecg.hamilton_segmenter(signal=filtered, sampling_rate=sampling_rate)
@@ -148,42 +150,42 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
 
     # Prepare Output Dataframe
     # ==========================
-    ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})  # Create a dataframe
-    ecg_df["ECG_Filtered"] = filtered  # Add filtered signal
+    ecg_df = pd.DataFrame({u"ECG_Raw": np.array(ecg)})  # Create a dataframe
+    ecg_df[u"ECG_Filtered"] = filtered  # Add filtered signal
 
     # Add R peaks
     rpeaks_signal = np.array([np.nan]*len(ecg))
     rpeaks_signal[rpeaks] = 1
-    ecg_df["ECG_R_Peaks"] = rpeaks_signal
+    ecg_df[u"ECG_R_Peaks"] = rpeaks_signal
 
 
     # Heart Rate
     try:
         heart_rate = discrete_to_continuous(heart_rate, heart_rate_times, sampling_rate)  # Interpolation using 3rd order spline
-        ecg_df["Heart_Rate"] = heart_rate
+        ecg_df[u"Heart_Rate"] = heart_rate
     except TypeError:
-        print("NeuroKit Warning: ecg_process(): Sequence too short to compute heart rate.")
-        ecg_df["Heart_Rate"] = np.nan
+        print u"NeuroKit Warning: ecg_process(): Sequence too short to compute heart rate."
+        ecg_df[u"Heart_Rate"] = np.nan
 
     # Store Additional Feature
     # ========================
-    processed_ecg = {"df": ecg_df,
-                     "ECG": {
-                            "R_Peaks": rpeaks
+    processed_ecg = {u"df": ecg_df,
+                     u"ECG": {
+                            u"R_Peaks": rpeaks
                             }
                      }
 
     # Heartbeats
     heartbeats = pd.DataFrame(cardiac_cycles).T
-    heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=str(int(1000/sampling_rate)) + "L")
-    processed_ecg["ECG"]["Cardiac_Cycles"] = heartbeats
+    heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=unicode(int(1000/sampling_rate)) + u"L")
+    processed_ecg[u"ECG"][u"Cardiac_Cycles"] = heartbeats
 
     # Waves
-    waves = ecg_wave_detector(ecg_df["ECG_Filtered"], rpeaks)
-    processed_ecg["ECG"].update(waves)
+    waves = ecg_wave_detector(ecg_df[u"ECG_Filtered"], rpeaks)
+    processed_ecg[u"ECG"].update(waves)
 
     # Systole
-    processed_ecg["df"]["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], rpeaks, waves["T_Waves"])
+    processed_ecg[u"df"][u"ECG_Systole"] = ecg_systole(ecg_df[u"ECG_Filtered"], rpeaks, waves[u"T_Waves"])
 
 
     return(processed_ecg)
@@ -201,7 +203,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
 # ==============================================================================
 # ==============================================================================
 def ecg_find_peaks(signal, sampling_rate=1000):
-    """
+    u"""
     Find R peaks indices on the ECG channel.
 
     Parameters
@@ -255,7 +257,7 @@ def ecg_find_peaks(signal, sampling_rate=1000):
 # ==============================================================================
 # ==============================================================================
 def ecg_wave_detector(ecg, rpeaks):
-    """
+    u"""
     Returns the localization of the P, Q, T waves. This function needs massive help!
 
     Parameters
@@ -331,7 +333,7 @@ def ecg_wave_detector(ecg, rpeaks):
     # TODO: manage to find the begininng of the Q and the end of the T wave so we can extract the QT interval
 
 
-    ecg_waves = {"T_Waves": t_waves, "P_Waves": p_waves, "Q_Waves": q_waves}
+    ecg_waves = {u"T_Waves": t_waves, u"P_Waves": p_waves, u"Q_Waves": q_waves}
     return(ecg_waves)
 
 
@@ -347,7 +349,7 @@ def ecg_wave_detector(ecg, rpeaks):
 # ==============================================================================
 # ==============================================================================
 def ecg_systole(ecg, rpeaks, t_waves):
-    """
+    u"""
     Returns the localization of systoles and diastoles.
 
     Parameters
@@ -385,16 +387,16 @@ def ecg_systole(ecg, rpeaks, t_waves):
     - Edwards, L., Ring, C., McIntyre, D., & Carroll, D. (2001). Modulation of the human nociceptive flexion reflex across the cardiac cycle. Psychophysiology, 38(4), 712-718.
     - Gray, M. A., Rylander, K., Harrison, N. A., Wallin, B. G., & Critchley, H. D. (2009). Following one's heart: cardiac rhythms gate central initiation of sympathetic reflexes. Journal of Neuroscience, 29(6), 1817-1825.
     """
-    waves = np.array([""]*len(ecg))
-    waves[rpeaks] = "R"
-    waves[t_waves] = "T"
+    waves = np.array([u""]*len(ecg))
+    waves[rpeaks] = u"R"
+    waves[t_waves] = u"T"
 
     systole = [0]
     current = 0
     for index, value in enumerate(waves[1:]):
-        if waves[index-1] == "R":
+        if waves[index-1] == u"R":
             current = 1
-        if waves[index-1] == "T":
+        if waves[index-1] == u"T":
             current = 0
         systole.append(current)
 
@@ -416,7 +418,7 @@ def ecg_systole(ecg, rpeaks, t_waves):
 # ==============================================================================
 # ==============================================================================
 def segmenter_pekkanen(ecg, sampling_rate, window_size=5.0, lfreq=5.0, hfreq=15.0):
-    """
+    u"""
     ECG R peak detection based on `Kathirvel et al. (2001) <http://link.springer.com/article/10.1007/s13239-011-0065-3/fulltext.html>`_ with some tweaks (mainly robust estimation of the rectified signal cutoff threshold).
 
     Parameters
@@ -459,8 +461,8 @@ def segmenter_pekkanen(ecg, sampling_rate, window_size=5.0, lfreq=5.0, hfreq=15.
 
     window_size = int(window_size*sampling_rate)
 
-    lowpass = scipy.signal.butter(1, hfreq/(sampling_rate/2.0), 'low')
-    highpass = scipy.signal.butter(1, lfreq/(sampling_rate/2.0), 'high')
+    lowpass = scipy.signal.butter(1, hfreq/(sampling_rate/2.0), u'low')
+    highpass = scipy.signal.butter(1, lfreq/(sampling_rate/2.0), u'high')
 
     # TODO: Could use an actual bandpass filter
     ecg_low = scipy.signal.filtfilt(*lowpass, x=ecg)
@@ -473,7 +475,7 @@ def segmenter_pekkanen(ecg, sampling_rate, window_size=5.0, lfreq=5.0, hfreq=15.
     # Robust threshold and normalizator estimation
     thresholds = []
     max_powers = []
-    for i in range(int(len(decg_power)/window_size)):
+    for i in xrange(int(len(decg_power)/window_size)):
         sample = slice(i*window_size, (i+1)*window_size)
         d = decg_power[sample]
         thresholds.append(0.5*np.std(d))
@@ -495,7 +497,7 @@ def segmenter_pekkanen(ecg, sampling_rate, window_size=5.0, lfreq=5.0, hfreq=15.
 
 
     mean_window_len = int(sampling_rate*0.125+1)
-    lp_energy = np.convolve(shannon_energy, [1.0/mean_window_len]*mean_window_len, mode='same')
+    lp_energy = np.convolve(shannon_energy, [1.0/mean_window_len]*mean_window_len, mode=u'same')
     #lp_energy = scipy.signal.filtfilt(*lowpass2, x=shannon_energy)
 
     lp_energy = scipy.ndimage.gaussian_filter1d(lp_energy, sampling_rate/8.0)

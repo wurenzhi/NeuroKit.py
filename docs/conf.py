@@ -9,9 +9,10 @@
 # built documents.
 #
 # The short X.Y version.
-version = '0.1.1'
+from __future__ import absolute_import
+version = u'0.1.1'
 # The full version, including alpha/beta/rc tags.
-release = '0.1.1'
+release = u'0.1.1'
 
 
 
@@ -35,32 +36,32 @@ import os
 import sys
 import mock
 
-sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath(u'../'))
 
 
 MOCK_MODULES = [
-        'numpy',
-        'pandas',
-        'scipy',
-        "scipy.stats",
-        "scipy.signal",
-        "scipy.spatial",
-        "scipy.spatial.distance",
-        "sklearn",
-        "sklearn.preprocessing",
-        "sklearn.decomposition",
-        "sklearn.cluster",
-        "sklearn.metrics",
-        "matplotlib",
-        "matplotlib.pyplot",
-        'mne',
-        'bioread',
-        'nolds',
-        "biosppy",
-        "Pillow",
-        "cvxopt",
-        "cvxopt.solvers",
-        "bio"]
+        u'numpy',
+        u'pandas',
+        u'scipy',
+        u"scipy.stats",
+        u"scipy.signal",
+        u"scipy.spatial",
+        u"scipy.spatial.distance",
+        u"sklearn",
+        u"sklearn.preprocessing",
+        u"sklearn.decomposition",
+        u"sklearn.cluster",
+        u"sklearn.metrics",
+        u"matplotlib",
+        u"matplotlib.pyplot",
+        u'mne',
+        u'bioread',
+        u'nolds',
+        u"biosppy",
+        u"Pillow",
+        u"cvxopt",
+        u"cvxopt.solvers",
+        u"bio"]
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
@@ -76,40 +77,40 @@ for mod_name in MOCK_MODULES:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode'
+    u'sphinx.ext.autodoc',
+    u'sphinx.ext.doctest',
+    u'sphinx.ext.intersphinx',
+    u'sphinx.ext.todo',
+    u'sphinx.ext.coverage',
+    u'sphinx.ext.mathjax',
+    u'sphinx.ext.ifconfig',
+    u'sphinx.ext.napoleon',
+    u'sphinx.ext.viewcode'
 ]
 
 # Napoleon settings
 # napoleon_use_rtype = False
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = [u'_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = u'.rst'
 
 # The encoding of source files.
 #
 # source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = u'index'
 
 # General information about the project.
-project = 'NeuroKit.py'
-copyright = '2017, Dominique Makowski'
-author = 'Dominique Makowski'
+project = u'NeuroKit.py'
+copyright = u'2017, Dominique Makowski'
+author = u'Dominique Makowski'
 
 
 
@@ -154,7 +155,7 @@ add_function_parentheses = True
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = u'sphinx'
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -171,7 +172,7 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'default'
+html_theme = u'default'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -194,18 +195,18 @@ html_theme = 'default'
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 #
-html_logo = "img/neurokit.png"
+html_logo = u"img/neurokit.png"
 
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 #
-html_favicon = "img/icon.ico"
+html_favicon = u"img/icon.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = [u'_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -285,7 +286,7 @@ html_show_sphinx = False
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'neurokit-doc'
+htmlhelp_basename = u'neurokit-doc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -311,8 +312,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'neurokit.tex', 'neurokit Documentation',
-     'Dominique Makowski', 'manual'),
+    (master_doc, u'neurokit.tex', u'neurokit Documentation',
+     u'Dominique Makowski', u'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -353,7 +354,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'neurokit', 'neurokit Documentation',
+    (master_doc, u'neurokit', u'neurokit Documentation',
      [author], 1)
 ]
 
@@ -368,9 +369,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'neurokit', 'neurokit Documentation',
-     author, 'neurokit', 'One line description of project.',
-     'Miscellaneous'),
+    (master_doc, u'neurokit', u'neurokit Documentation',
+     author, u'neurokit', u'One line description of project.',
+     u'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -444,7 +445,7 @@ epub_copyright = copyright
 # epub_post_files = []
 
 # A list of files that should not be packed into the epub file.
-epub_exclude_files = ['search.html']
+epub_exclude_files = [u'search.html']
 
 # The depth of the table of contents in toc.ncx.
 #
@@ -476,7 +477,7 @@ epub_exclude_files = ['search.html']
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {u'https://docs.python.org/': None}
 
 
 

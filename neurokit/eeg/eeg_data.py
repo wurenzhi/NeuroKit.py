@@ -1,12 +1,14 @@
-"""
+u"""
 Loading data and events submodule.
 """
+from __future__ import absolute_import
 from ..signal import find_events
 
 import numpy as np
 import pandas as pd
 import mne
 import re
+from itertools import izip
 
 
 
@@ -21,7 +23,7 @@ import re
 # ==============================================================================
 # ==============================================================================
 def eeg_add_channel(raw, channel, sync_index_eeg=0, sync_index_channel=0, channel_type=None, channel_name=None):
-    """
+    u"""
     Add a channel to a mne's Raw m/eeg file. It will basically synchronize the channel to the eeg data following a particular index and add it.
 
     Parameters
@@ -68,9 +70,9 @@ def eeg_add_channel(raw, channel, sync_index_eeg=0, sync_index_channel=0, channe
             if channel.name is not None:
                 channel_name = channel.name
             else:
-                channel_name = "Added_Channel"
+                channel_name = u"Added_Channel"
         else:
-            channel_name = "Added_Channel"
+            channel_name = u"Added_Channel"
 
     # Compute the distance between the two signals
     diff = sync_index_channel - sync_index_eeg
@@ -87,7 +89,7 @@ def eeg_add_channel(raw, channel, sync_index_eeg=0, sync_index_channel=0, channe
     else:
         channel = list(channel)[0:len(raw)]  # Crop to fit the raw data
 
-    info = mne.create_info([channel_name], raw.info["sfreq"], ch_types=channel_type)
+    info = mne.create_info([channel_name], raw.info[u"sfreq"], ch_types=channel_type)
     channel = mne.io.RawArray([channel], info)
 
     raw.add_channels([channel], force_update_info=True)
@@ -106,7 +108,7 @@ def eeg_add_channel(raw, channel, sync_index_eeg=0, sync_index_channel=0, channe
 # ==============================================================================
 # ==============================================================================
 def eeg_select_channels(raw, channel_names):
-    """
+    u"""
     Select one or several channels by name and returns them in a dataframe.
 
     Parameters
@@ -166,8 +168,8 @@ def eeg_select_channels(raw, channel_names):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_select_electrodes(eeg, include="all", exclude=None, hemisphere="both", central=True):
-    """
+def eeg_select_electrodes(eeg, include=u"all", exclude=None, hemisphere=u"both", central=True):
+    u"""
     Returns electrodes/sensors names of selected region (according to a 10-20 EEG montage).
 
     Parameters
@@ -206,20 +208,20 @@ def eeg_select_electrodes(eeg, include="all", exclude=None, hemisphere="both", c
     channel_list = eeg.ch_names
 
     # Include
-    if include == "all":
+    if include == u"all":
         electrodes = channel_list
-    elif isinstance(include, str):
+    elif isinstance(include, unicode):
         electrodes = [s for s in channel_list if include in s]
     elif isinstance(include, list):
         electrodes = []
         for i in include:
             electrodes += [s for s in channel_list if i in s]
     else:
-        print("NeuroKit Warning: eeg_select_electrodes(): 'include' parameter must be 'all', str or list.")
+        print u"NeuroKit Warning: eeg_select_electrodes(): 'include' parameter must be 'all', str or list."
 
     # Exclude
     if exclude is not None:
-        if isinstance(exclude, str):
+        if isinstance(exclude, unicode):
             to_remove = [s for s in channel_list if exclude in s]
             electrodes = [s for s in electrodes if s not in to_remove]
         elif isinstance(exclude, list):
@@ -228,19 +230,19 @@ def eeg_select_electrodes(eeg, include="all", exclude=None, hemisphere="both", c
                 to_remove += [s for s in channel_list if i in s]
             electrodes = [s for s in electrodes if s not in to_remove]
         else:
-            print("NeuroKit Warning: eeg_select_electrodes(): 'exclude' parameter must be None, str or list.")
+            print u"NeuroKit Warning: eeg_select_electrodes(): 'exclude' parameter must be None, str or list."
 
     # Laterality
-    if hemisphere != "both":
-        if hemisphere.lower() == "left" or hemisphere.lower() == "l":
-            hemi = [s for s in electrodes if len(re.findall(r'\d+', s)) > 0 and int(re.findall(r'\d+', s)[0])%2 > 0]
-        elif hemisphere.lower() == "right" or hemisphere.lower() == "r":
-            hemi = [s for s in electrodes if len(re.findall(r'\d+', s)) > 0 and int(re.findall(r'\d+', s)[0])%2 == 0]
+    if hemisphere != u"both":
+        if hemisphere.lower() == u"left" or hemisphere.lower() == u"l":
+            hemi = [s for s in electrodes if len(re.findall(ur'\d+', s)) > 0 and int(re.findall(ur'\d+', s)[0])%2 > 0]
+        elif hemisphere.lower() == u"right" or hemisphere.lower() == u"r":
+            hemi = [s for s in electrodes if len(re.findall(ur'\d+', s)) > 0 and int(re.findall(ur'\d+', s)[0])%2 == 0]
         else:
-            print("NeuroKit Warning: eeg_select_electrodes(): 'hemisphere' parameter must be 'both', 'left' or 'right'. Returning both.")
+            print u"NeuroKit Warning: eeg_select_electrodes(): 'hemisphere' parameter must be 'both', 'left' or 'right'. Returning both."
 
         if central is True:
-            hemi += [s for s in electrodes if 'z' in s]
+            hemi += [s for s in electrodes if u'z' in s]
 
         electrodes = hemi
 
@@ -256,7 +258,7 @@ def eeg_select_electrodes(eeg, include="all", exclude=None, hemisphere="both", c
 # ==============================================================================
 # ==============================================================================
 def eeg_create_mne_events(onsets, conditions=None):
-    """
+    u"""
     Create MNE compatible events.
 
     Parameters
@@ -285,18 +287,18 @@ def eeg_create_mne_events(onsets, conditions=None):
     event_id = {}
 
     if conditions is None:
-        conditions = ["Event"] * len(onsets)
+        conditions = [u"Event"] * len(onsets)
 
     # Sanity check
     if len(conditions) != len(onsets):
-        print("NeuroKit Warning: eeg_create_events(): conditions parameter of different length than onsets. Aborting.")
+        print u"NeuroKit Warning: eeg_create_events(): conditions parameter of different length than onsets. Aborting."
         return()
 
 
 
     event_names = list(set(conditions))
 #    event_index = [1, 2, 3, 4, 5, 32, 64, 128]
-    event_index = list(range(len(event_names)))
+    event_index = range(len(event_names))
     for i in enumerate(event_names):
         conditions = [event_index[i[0]] if x==i[1] else x for x in conditions]
         event_id[i[1]] = event_index[i[0]]
@@ -317,8 +319,8 @@ def eeg_create_mne_events(onsets, conditions=None):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="higher", time_index=None, number="all", after=0, before=None, min_duration=1):
-    """
+def eeg_add_events(raw, events_channel, conditions=None, treshold=u"auto", cut=u"higher", time_index=None, number=u"all", after=0, before=None, min_duration=1):
+    u"""
     Find events on a channel, convert them into an MNE compatible format, and add them to the raw data.
 
     Parameters
@@ -374,17 +376,17 @@ def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="h
     - None
     """
     # Extract the events_channel from raw if needed
-    if isinstance(events_channel, str):
+    if isinstance(events_channel, unicode):
         try:
             events_channel = eeg_select_channels(raw, events_channel)
         except:
-            print("NeuroKit error: eeg_add_events(): Wrong events_channel name provided.")
+            print u"NeuroKit error: eeg_add_events(): Wrong events_channel name provided."
 
     # Find event onsets
     events = find_events(events_channel, treshold=treshold, cut=cut, time_index=time_index, number=number, after=after, before=before, min_duration=min_duration)
 
     # Create mne compatible events
-    events, event_id = eeg_create_mne_events(events["onsets"], conditions)
+    events, event_id = eeg_create_mne_events(events[u"onsets"], conditions)
 
     # Add them
     raw.add_events(events)
@@ -404,7 +406,7 @@ def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="h
 # ==============================================================================
 # ==============================================================================
 def eeg_to_all_evokeds(all_epochs, conditions=None):
-    """
+    u"""
     Convert all_epochs to all_evokeds.
 
     DOCS INCOMPLETE :(
@@ -436,8 +438,8 @@ def eeg_to_all_evokeds(all_epochs, conditions=None):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_to_df(eeg, index=None, include="all", exclude=None, hemisphere="both", central=True):
-    """
+def eeg_to_df(eeg, index=None, include=u"all", exclude=None, hemisphere=u"both", central=True):
+    u"""
     Convert mne Raw or Epochs object to dataframe or dict of dataframes.
 
     DOCS INCOMPLETE :(
@@ -446,9 +448,9 @@ def eeg_to_df(eeg, index=None, include="all", exclude=None, hemisphere="both", c
         data = {}
 
         if index is None:
-            index = range(len(eeg))
+            index = xrange(len(eeg))
 
-        for epoch_index, epoch in zip(index, eeg.get_data()):
+        for epoch_index, epoch in izip(index, eeg.get_data()):
 
             epoch = pd.DataFrame(epoch.T)
             epoch.columns = eeg.ch_names

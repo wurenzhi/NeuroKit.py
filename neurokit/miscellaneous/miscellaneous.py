@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import time as builtin_time
 import pandas as pd
 import numpy as np
+from itertools import ifilter
+import copy
 
 
 # ==============================================================================
@@ -12,8 +15,8 @@ import numpy as np
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-class Time():
-    """
+class Time(object):
+    u"""
     A class object to get time.
 
     Its methods (functions) are:
@@ -51,7 +54,7 @@ class Time():
         self.clock = builtin_time.clock()
 
     def reset(self):
-        """
+        u"""
         Reset the clock of the Time object.
 
         Parameters
@@ -82,7 +85,7 @@ class Time():
         self.clock = builtin_time.clock()
 
     def get(self, reset=True):
-        """
+        u"""
         Get time since last initialisation / reset.
 
         Parameters
@@ -129,7 +132,7 @@ class Time():
 # ==============================================================================
 # ==============================================================================
 def find_following_duplicates(array):
-    """
+    u"""
     Find the duplicates that are following themselves.
 
     Parameters
@@ -159,11 +162,11 @@ def find_following_duplicates(array):
 
     - numpy
     """
-    array = array.copy()
+    array = copy.copy(array)
 
 
     uniques = []
-    for i in range(len(array)):
+    for i in xrange(len(array)):
         if i == 0:
             uniques.append(True)
         else:
@@ -186,8 +189,8 @@ def find_following_duplicates(array):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def find_closest_in_list(number, array, direction="both", strictly=False):
-    """
+def find_closest_in_list(number, array, direction=u"both", strictly=False):
+    u"""
     Find the closest number in the array from x.
 
     Parameters
@@ -218,18 +221,18 @@ def find_closest_in_list(number, array, direction="both", strictly=False):
     - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     """
-    if direction == "both":
+    if direction == u"both":
         closest = min(array, key=lambda x:abs(x-number))
-    if direction == "smaller":
+    if direction == u"smaller":
         if strictly is True:
             closest = max(x for x in array if x < number)
         else:
             closest = max(x for x in array if x <= number)
-    if direction == "greater":
+    if direction == u"greater":
         if strictly is True:
-            closest = min(filter(lambda x: x > number, array))
+            closest = min(ifilter(lambda x: x > number, array))
         else:
-            closest = min(filter(lambda x: x >= number, array))
+            closest = min(ifilter(lambda x: x >= number, array))
 
     return(closest)
 

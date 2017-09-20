@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
+u"""
 Subsubmodule for ecg processing.
 """
+from __future__ import division
+from __future__ import absolute_import
 import numpy as np
 import pandas as pd
 import sklearn
@@ -22,8 +24,8 @@ from ..statistics import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45], segmenter="hamilton", quality_model="default", hrv_features=["time", "frequency", "nonlinear"], age=None, sex=None, position=None):
-    """
+def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type=u"FIR", filter_band=u"bandpass", filter_frequency=[3, 45], segmenter=u"hamilton", quality_model=u"default", hrv_features=[u"time", u"frequency", u"nonlinear"], age=None, sex=None, position=None):
+    u"""
     Automated processing of ECG and RSP signals.
 
     Parameters
@@ -115,34 +117,34 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
     # Signal quality
     # ===============
     if quality_model is not None:
-        quality = ecg_signal_quality(processed_ecg["ECG"]["Cardiac_Cycles"], sampling_rate, quality_model=quality_model)
-        processed_ecg["ECG"].update(quality)
+        quality = ecg_signal_quality(processed_ecg[u"ECG"][u"Cardiac_Cycles"], sampling_rate, quality_model=quality_model)
+        processed_ecg[u"ECG"].update(quality)
 
 
     # HRV
     # =============
     if hrv_features is not None:
-        hrv = ecg_hrv(processed_ecg["ECG"]["R_Peaks"], sampling_rate, hrv_features=hrv_features)
+        hrv = ecg_hrv(processed_ecg[u"ECG"][u"R_Peaks"], sampling_rate, hrv_features=hrv_features)
         try:
-            processed_ecg["df"] = pd.concat([processed_ecg["df"], hrv.pop("df")], axis=1)
+            processed_ecg[u"df"] = pd.concat([processed_ecg[u"df"], hrv.pop(u"df")], axis=1)
         except KeyError:
             pass
-        processed_ecg["ECG"]["HRV"] = hrv
+        processed_ecg[u"ECG"][u"HRV"] = hrv
         if age is not None and sex is not None and position is not None:
-            processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(hrv, age, sex, position)
+            processed_ecg[u"ECG"][u"HRV_Adjusted"] = ecg_hrv_assessment(hrv, age, sex, position)
 
     # RSP
     # =============
     if rsp is not None:
         rsp = rsp_process(rsp=rsp, sampling_rate=sampling_rate)
-        processed_ecg["RSP"] = rsp["RSP"]
-        processed_ecg["df"] = pd.concat([processed_ecg["df"], rsp["df"]], axis=1)
+        processed_ecg[u"RSP"] = rsp[u"RSP"]
+        processed_ecg[u"df"] = pd.concat([processed_ecg[u"df"], rsp[u"df"]], axis=1)
 
         # RSA
         # =============
-        rsa = ecg_rsa(processed_ecg["ECG"]["R_Peaks"], rsp["df"]["RSP_Filtered"], sampling_rate=sampling_rate)
-        processed_ecg["ECG"]["RSA"] = rsa
-        processed_ecg["df"] = pd.concat([processed_ecg["df"], rsa.pop("df")], axis=1)
+        rsa = ecg_rsa(processed_ecg[u"ECG"][u"R_Peaks"], rsp[u"df"][u"RSP_Filtered"], sampling_rate=sampling_rate)
+        processed_ecg[u"ECG"][u"RSA"] = rsa
+        processed_ecg[u"df"] = pd.concat([processed_ecg[u"df"], rsa.pop(u"df")], axis=1)
 
     return(processed_ecg)
 
@@ -164,7 +166,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
 # ==============================================================================
 # ==============================================================================
 def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
-    """
+    u"""
     Returns Respiratory Sinus Arrhythmia (RSA) features. Only the Peak-to-trough (P2T) algorithm is currently implemented (see details).
 
     Parameters
@@ -213,13 +215,13 @@ def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
     # Preprocessing
     # =================
     rsp_cycles = rsp_find_cycles(rsp)
-    rsp_onsets = rsp_cycles["RSP_Cycles_Onsets"]
-    rsp_cycle_center = rsp_cycles["RSP_Expiration_Onsets"]
+    rsp_onsets = rsp_cycles[u"RSP_Cycles_Onsets"]
+    rsp_cycle_center = rsp_cycles[u"RSP_Expiration_Onsets"]
     rsp_cycle_center = np.array(rsp_cycle_center)[rsp_cycle_center > rsp_onsets[0]]
     if len(rsp_cycle_center) - len(rsp_onsets) == 0:
         rsp_cycle_center = rsp_cycle_center[:-1]
     if len(rsp_cycle_center) - len(rsp_onsets) != -1:
-        print("NeuroKit Error: ecg_rsp(): Couldn't find clean rsp cycles onsets and centers. Check your RSP signal.")
+        print u"NeuroKit Error: ecg_rsp(): Couldn't find clean rsp cycles onsets and centers. Check your RSP signal."
         return()
     rsa = {}
 
@@ -228,29 +230,29 @@ def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
     # ===============================
     # Find all RSP cycles and the Rpeaks within
     cycles_rri = []
-    for idx in range(len(rsp_onsets) - 1):
+    for idx in xrange(len(rsp_onsets) - 1):
         cycle_init = rsp_onsets[idx]
         cycle_end = rsp_onsets[idx + 1]
         cycles_rri.append(rpeaks[np.logical_and(rpeaks >= cycle_init,
                                                 rpeaks < cycle_end)])
 
     # Iterate over all cycles
-    rsa["RSA_P2T_Values"] = []
+    rsa[u"RSA_P2T_Values"] = []
     for cycle in cycles_rri:
         RRis = np.diff(cycle)/sampling_rate
         if len(RRis) > 1:
-            rsa["RSA_P2T_Values"].append(np.max(RRis) - np.min(RRis))
+            rsa[u"RSA_P2T_Values"].append(np.max(RRis) - np.min(RRis))
         else:
-            rsa["RSA_P2T_Values"].append(np.nan)
-    rsa["RSA_P2T_Mean"] = pd.Series(rsa["RSA_P2T_Values"]).mean()
-    rsa["RSA_P2T_Mean_log"] = np.log(rsa["RSA_P2T_Mean"])
-    rsa["RSA_P2T_Variability"] = pd.Series(rsa["RSA_P2T_Values"]).std()
+            rsa[u"RSA_P2T_Values"].append(np.nan)
+    rsa[u"RSA_P2T_Mean"] = pd.Series(rsa[u"RSA_P2T_Values"]).mean()
+    rsa[u"RSA_P2T_Mean_log"] = np.log(rsa[u"RSA_P2T_Mean"])
+    rsa[u"RSA_P2T_Variability"] = pd.Series(rsa[u"RSA_P2T_Values"]).std()
 
     # Continuous RSA - Interpolation using a 3rd order spline
-    if len(rsp_cycle_center) - len(rsa["RSA_P2T_Values"]) != 0:
-        print("NeuroKit Error: ecg_rsp(): Couldn't find clean rsp cycles onsets and centers. Check your RSP signal.")
+    if len(rsp_cycle_center) - len(rsa[u"RSA_P2T_Values"]) != 0:
+        print u"NeuroKit Error: ecg_rsp(): Couldn't find clean rsp cycles onsets and centers. Check your RSP signal."
         return()
-    values=pd.Series(rsa["RSA_P2T_Values"])
+    values=pd.Series(rsa[u"RSA_P2T_Values"])
     NaNs_indices = values.index[values.isnull()]  # get eventual artifacts indices
     values = values.drop(NaNs_indices)  # remove the artifacts
     value_times=(np.array(rsp_cycle_center))
@@ -264,9 +266,9 @@ def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
 
     continuous_rsa = []
     phase_counter = 0
-    for i in range(len(rsp)):
+    for i in xrange(len(rsp)):
         if i == rsp_onsets[phase_counter]:
-            current_rsa = rsa["RSA_P2T_Values"][phase_counter]
+            current_rsa = rsa[u"RSA_P2T_Values"][phase_counter]
             if phase_counter < len(rsp_onsets)-2:
                 phase_counter += 1
         continuous_rsa.append(current_rsa)
@@ -275,10 +277,10 @@ def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
     continuous_rsa = np.array(continuous_rsa)
     continuous_rsa[max(rsp_onsets):] = np.nan
 
-    df = pd.DataFrame({"RSP":rsp})
-    df["RSA_Values"] = continuous_rsa
-    df["RSA"] = rsa_interpolated
-    rsa["df"] = df
+    df = pd.DataFrame({u"RSP":rsp})
+    df[u"RSA_Values"] = continuous_rsa
+    df[u"RSA"] = rsa_interpolated
+    rsa[u"df"] = df
 
     # Porges–Bohrer method (RSAP–B)
     # ==============================
@@ -295,8 +297,8 @@ def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
-    """
+def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model=u"default"):
+    u"""
     Attempt to find the recording lead and the overall and individual quality of hearbeats signal.
 
     Parameters
@@ -332,10 +334,10 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     - pandas
     """
     if len(cardiac_cycles) > 200:
-        cardiac_cycles = cardiac_cycles.rolling(20).mean().resample("3L").pad()
+        cardiac_cycles = cardiac_cycles.rolling(20).mean().resample(u"3L").pad()
     if len(cardiac_cycles) < 200:
-        cardiac_cycles = cardiac_cycles.resample("1L").pad()
-        cardiac_cycles = cardiac_cycles.rolling(20).mean().resample("3L").pad()
+        cardiac_cycles = cardiac_cycles.resample(u"1L").pad()
+        cardiac_cycles = cardiac_cycles.rolling(20).mean().resample(u"3L").pad()
 
     if len(cardiac_cycles) < 200:
         fill_dict = {}
@@ -343,13 +345,13 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
             fill_dict[i] = [np.nan] * (200-len(cardiac_cycles))
         cardiac_cycles = pd.concat([pd.DataFrame(fill_dict), cardiac_cycles], ignore_index=True)
 
-    cardiac_cycles = cardiac_cycles.fillna(method="bfill")
+    cardiac_cycles = cardiac_cycles.fillna(method=u"bfill")
     cardiac_cycles = cardiac_cycles.reset_index(drop=True)[8:200]
     cardiac_cycles = z_score(cardiac_cycles).T
     cardiac_cycles = np.array(cardiac_cycles)
 
-    if quality_model == "default":
-        model = sklearn.externals.joblib.load(Path.materials() + 'heartbeat_classification.model')
+    if quality_model == u"default":
+        model = sklearn.externals.joblib.load(Path.materials() + u'heartbeat_classification.model')
     else:
         model = sklearn.externals.joblib.load(quality_model)
 
@@ -359,12 +361,12 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     # Find dominant class
     lead = model.predict(cardiac_cycles)
     lead = pd.Series(lead).value_counts().index[0]
-    quality["Probable_Lead"] = lead
+    quality[u"Probable_Lead"] = lead
 
     predict = pd.DataFrame(model.predict_proba(cardiac_cycles))
     predict.columns = model.classes_
-    quality["Cardiac_Cycles_Signal_Quality"] = predict[lead].as_matrix()
-    quality["Average_Signal_Quality"] = predict[lead].mean()
+    quality[u"Cardiac_Cycles_Signal_Quality"] = predict[lead].as_matrix()
+    quality[u"Average_Signal_Quality"] = predict[lead].mean()
 
     return(quality)
 
@@ -378,8 +380,8 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonlinear"]):
-    """
+def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=[u"time", u"frequency", u"nonlinear"]):
+    u"""
     Computes the Heart-Rate Variability (HRV). Shamelessly stolen from the `hrv <https://github.com/rhenanbartels/hrv/blob/develop/hrv>`_ package by Rhenan Bartels. All credits go to him.
 
     Parameters
@@ -494,39 +496,39 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
 
      # Sanity check
     if len(RRis) <= 1:
-        print("NeuroKit Warning: ecg_hrv(): Not enough R peaks to compute HRV :/")
+        print u"NeuroKit Warning: ecg_hrv(): Not enough R peaks to compute HRV :/"
         return(hrv)
 
     # Artifacts treatment
-    hrv["n_Artifacts"] = pd.isnull(RRis).sum()/len(RRis)
+    hrv[u"n_Artifacts"] = pd.isnull(RRis).sum()/len(RRis)
     artifacts_indices = RRis.index[RRis.isnull()]  # get the artifacts indices
     RRis = RRis.drop(artifacts_indices)  # remove the artifacts
 
 
     # Rescale to 1000Hz
     RRis = RRis*1000
-    hrv["RR_Intervals"] = RRis  # Values of RRis
+    hrv[u"RR_Intervals"] = RRis  # Values of RRis
 
     # Sanity check fater artifact removal
     if len(RRis) <= 1:
-        print("NeuroKit Warning: ecg_hrv(): Not enough normal R peaks to compute HRV :/")
+        print u"NeuroKit Warning: ecg_hrv(): Not enough normal R peaks to compute HRV :/"
         return(hrv)
 
     # Time Domain
     # ==================
-    if "time" in hrv_features:
-        hrv["RMSSD"] = np.sqrt(np.mean(np.diff(RRis) ** 2))
-        hrv["meanNN"] = np.mean(RRis)
-        hrv["sdNN"] = np.std(RRis, ddof=1)  # make it calculate N-1
-        hrv["cvNN"] = hrv["sdNN"] / hrv["meanNN"]
-        hrv["CVSD"] = hrv["RMSSD"] / hrv["meanNN"]
-        hrv["medianNN"] = np.median(abs(RRis))
-        hrv["madNN"] = mad(RRis, constant=1)
-        hrv["mcvNN"] = hrv["madNN"] / hrv["medianNN"]
+    if u"time" in hrv_features:
+        hrv[u"RMSSD"] = np.sqrt(np.mean(np.diff(RRis) ** 2))
+        hrv[u"meanNN"] = np.mean(RRis)
+        hrv[u"sdNN"] = np.std(RRis, ddof=1)  # make it calculate N-1
+        hrv[u"cvNN"] = hrv[u"sdNN"] / hrv[u"meanNN"]
+        hrv[u"CVSD"] = hrv[u"RMSSD"] / hrv[u"meanNN"]
+        hrv[u"medianNN"] = np.median(abs(RRis))
+        hrv[u"madNN"] = mad(RRis, constant=1)
+        hrv[u"mcvNN"] = hrv[u"madNN"] / hrv[u"medianNN"]
         nn50 = sum(abs(np.diff(RRis)) > 50)
         nn20 = sum(abs(np.diff(RRis)) > 20)
-        hrv["pNN50"] = nn50 / len(RRis) * 100
-        hrv["pNN20"] = nn20 / len(RRis) * 100
+        hrv[u"pNN50"] = nn50 / len(RRis) * 100
+        hrv[u"pNN20"] = nn20 / len(RRis) * 100
 
 
 
@@ -535,7 +537,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
 
     # Frequency Domain Preparation
     # ==============================
-    if "frequency" in hrv_features:
+    if u"frequency" in hrv_features:
 
         # Interpolation
         # =================
@@ -547,12 +549,12 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
         try:
             RRi = discrete_to_continuous(RRis, beats_times, sampling_rate)  # Interpolation using 3rd order spline
         except TypeError:
-            print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute interpolation. Will skip many features.")
+            print u"NeuroKit Warning: ecg_hrv(): Sequence too short to compute interpolation. Will skip many features."
             return(hrv)
 
         # Rescale to 1000Hz
         RRi = RRi*1000
-        hrv["df"] = RRi.to_frame("ECG_RR_Interval")  # Continuous (interpolated) signal of RRi
+        hrv[u"df"] = RRi.to_frame(u"ECG_RR_Interval")  # Continuous (interpolated) signal of RRi
 
 
 
@@ -562,26 +564,26 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
         try:
             bin_number = 32  # Initialize bin_width value
             # find the appropriate number of bins so the class width is approximately 8 ms (Voss, 2015)
-            for bin_number_current in range(2, 50):
+            for bin_number_current in xrange(2, 50):
                 bin_width = np.diff(np.histogram(RRi, bins=bin_number_current, density=True)[1])[0]
                 if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(RRi, bins=bin_number, density=True)[1])[0]):
                     bin_number = bin_number_current
-            hrv["Triang"] = len(RRis)/np.max(np.histogram(RRi, bins=bin_number, density=True)[0])
-            hrv["Shannon_h"] = complexity_entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
+            hrv[u"Triang"] = len(RRis)/np.max(np.histogram(RRi, bins=bin_number, density=True)[0])
+            hrv[u"Shannon_h"] = complexity_entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
         except ValueError:
-            hrv["Triang"] = np.nan
-            hrv["Shannon_h"] = np.nan
+            hrv[u"Triang"] = np.nan
+            hrv[u"Shannon_h"] = np.nan
 
 
 
         # Frequency Domain Features
         # ==========================
         freq_bands = {
-          "ULF": [0.0001, 0.0033],
-          "VLF": [0.0033, 0.04],
-          "LF": [0.04, 0.15],
-          "HF": [0.15, 0.40],
-          "VHF": [0.4, 0.5]}
+          u"ULF": [0.0001, 0.0033],
+          u"VLF": [0.0033, 0.04],
+          u"LF": [0.04, 0.15],
+          u"HF": [0.15, 0.40],
+          u"VHF": [0.4, 0.5]}
 
 
 
@@ -590,64 +592,64 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
         for band in freq_bands:
             freqs = freq_bands[band]
             # Filter to keep only the band of interest
-            filtered, sampling_rate, params = biosppy.signals.tools.filter_signal(signal=RRi, ftype='butter', band='bandpass', order=1, frequency=freqs, sampling_rate=sampling_rate)
+            filtered, sampling_rate, params = biosppy.signals.tools.filter_signal(signal=RRi, ftype=u'butter', band=u'bandpass', order=1, frequency=freqs, sampling_rate=sampling_rate)
             # Apply Hilbert transform
             amplitude, phase = biosppy.signals.tools.analytic_signal(filtered)
             # Extract Amplitude of Envolope (power)
-            freq_powers["ECG_HRV_" + band] = amplitude
+            freq_powers[u"ECG_HRV_" + band] = amplitude
 
         freq_powers = pd.DataFrame.from_dict(freq_powers)
-        freq_powers.index = hrv["df"].index
-        hrv["df"] = pd.concat([hrv["df"], freq_powers], axis=1)
+        freq_powers.index = hrv[u"df"].index
+        hrv[u"df"] = pd.concat([hrv[u"df"], freq_powers], axis=1)
 
 
         # Compute Power Spectral Density (PSD) using multitaper method
-        power, freq = mne.time_frequency.psd_array_multitaper(RRi, sfreq=sampling_rate, fmin=0, fmax=0.5,  adaptive=False, normalization='length')
+        power, freq = mne.time_frequency.psd_array_multitaper(RRi, sfreq=sampling_rate, fmin=0, fmax=0.5,  adaptive=False, normalization=u'length')
 
 
 
         # Extract Power according to frequency bands
-        hrv["ULF"] = power_in_band(power, freq, freq_bands["ULF"])
-        hrv["VLF"] = power_in_band(power, freq, freq_bands["VLF"])
-        hrv["LF"] = power_in_band(power, freq, freq_bands["LF"])
-        hrv["HF"] = power_in_band(power, freq, freq_bands["HF"])
-        hrv["VHF"] = power_in_band(power, freq, freq_bands["VHF"])
-        hrv["Total_Power"] = power_in_band(power, freq, [0, 0.5])
+        hrv[u"ULF"] = power_in_band(power, freq, freq_bands[u"ULF"])
+        hrv[u"VLF"] = power_in_band(power, freq, freq_bands[u"VLF"])
+        hrv[u"LF"] = power_in_band(power, freq, freq_bands[u"LF"])
+        hrv[u"HF"] = power_in_band(power, freq, freq_bands[u"HF"])
+        hrv[u"VHF"] = power_in_band(power, freq, freq_bands[u"VHF"])
+        hrv[u"Total_Power"] = power_in_band(power, freq, [0, 0.5])
 
-        hrv["LFn"] = hrv["LF"]/(hrv["LF"]+hrv["HF"])
-        hrv["HFn"] = hrv["HF"]/(hrv["LF"]+hrv["HF"])
-        hrv["LF/HF"] = hrv["LF"]/hrv["HF"]
-        hrv["LF/P"] = hrv["LF"]/hrv["Total_Power"]
-        hrv["HF/P"] = hrv["HF"]/hrv["Total_Power"]
+        hrv[u"LFn"] = hrv[u"LF"]/(hrv[u"LF"]+hrv[u"HF"])
+        hrv[u"HFn"] = hrv[u"HF"]/(hrv[u"LF"]+hrv[u"HF"])
+        hrv[u"LF/HF"] = hrv[u"LF"]/hrv[u"HF"]
+        hrv[u"LF/P"] = hrv[u"LF"]/hrv[u"Total_Power"]
+        hrv[u"HF/P"] = hrv[u"HF"]/hrv[u"Total_Power"]
 
 
     # TODO: THIS HAS TO BE CHECKED BY AN EXPERT - Should it be applied on the interpolated on raw RRis?
     # Non-Linear Dynamics
     # ======================
-    if "nonlinear" in hrv_features:
+    if u"nonlinear" in hrv_features:
         if len(RRis) > 17:
-            hrv["DFA_1"] = nolds.dfa(RRis, range(4, 17))
+            hrv[u"DFA_1"] = nolds.dfa(RRis, xrange(4, 17))
         if len(RRis) > 66:
-            hrv["DFA_2"] = nolds.dfa(RRis, range(16, 66))
-        hrv["Shannon"] = complexity_entropy_shannon(RRis)
-        hrv["Sample_Entropy"] = nolds.sampen(RRis, emb_dim=2)
+            hrv[u"DFA_2"] = nolds.dfa(RRis, xrange(16, 66))
+        hrv[u"Shannon"] = complexity_entropy_shannon(RRis)
+        hrv[u"Sample_Entropy"] = nolds.sampen(RRis, emb_dim=2)
         try:
-            hrv["Correlation_Dimension"] = nolds.corr_dim(RRis, emb_dim=2)
-        except AssertionError as error:
-            print("NeuroKit Warning: ecg_hrv(): Correlation Dimension. Error: " + str(error))
-            hrv["Correlation_Dimension"] = np.nan
-        hrv["Entropy_Multiscale"] = complexity_entropy_multiscale(RRis, emb_dim=2)
-        hrv["Entropy_SVD"] = complexity_entropy_svd(RRis, emb_dim=2)
-        hrv["Entropy_Spectral_VLF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.0033, 0.04, 0.001))
-        hrv["Entropy_Spectral_LF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.04, 0.15, 0.001))
-        hrv["Entropy_Spectral_HF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.15, 0.40, 0.001))
-        hrv["Fisher_Info"] = complexity_fisher_info(RRis, tau=1, emb_dim=2)
+            hrv[u"Correlation_Dimension"] = nolds.corr_dim(RRis, emb_dim=2)
+        except AssertionError, error:
+            print u"NeuroKit Warning: ecg_hrv(): Correlation Dimension. Error: " + unicode(error)
+            hrv[u"Correlation_Dimension"] = np.nan
+        hrv[u"Entropy_Multiscale"] = complexity_entropy_multiscale(RRis, emb_dim=2)
+        hrv[u"Entropy_SVD"] = complexity_entropy_svd(RRis, emb_dim=2)
+        hrv[u"Entropy_Spectral_VLF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.0033, 0.04, 0.001))
+        hrv[u"Entropy_Spectral_LF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.04, 0.15, 0.001))
+        hrv[u"Entropy_Spectral_HF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.15, 0.40, 0.001))
+        hrv[u"Fisher_Info"] = complexity_fisher_info(RRis, tau=1, emb_dim=2)
         try:  # Otherwise travis errors for some reasons :(
-            hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis.values, emb_dim=58, matrix_dim=4))
+            hrv[u"Lyapunov"] = np.max(nolds.lyap_e(RRis.values, emb_dim=58, matrix_dim=4))
         except Exception:
-            hrv["Lyapunov"] = np.nan
-        hrv["FD_Petrosian"] = complexity_fd_petrosian(RRis)
-        hrv["FD_Higushi"] = complexity_fd_higushi(RRis, k_max=16)
+            hrv[u"Lyapunov"] = np.nan
+        hrv[u"FD_Petrosian"] = complexity_fd_petrosian(RRis)
+        hrv[u"FD_Higushi"] = complexity_fd_higushi(RRis, k_max=16)
 
     # TO DO:
     # Include many others (see Voss 2015)
@@ -666,7 +668,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
 # ==============================================================================
 # ==============================================================================
 def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
-    """
+    u"""
     Correct HRV features based on normative data from Voss et al. (2015).
 
     Parameters
@@ -709,41 +711,41 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
     """
     hrv_adjusted = {}
 
-    if position == "supine":
-        if sex == "m":
+    if position == u"supine":
+        if sex == u"m":
             if age <= 49:
-                hrv_adjusted["meanNN_Adjusted"] = (hrv["meanNN"]-930)/133
-                hrv_adjusted["sdNN_Adjusted"] = (hrv["sdNN"]-45.8)/18.8
-                hrv_adjusted["RMSSD_Adjusted"] = (hrv["RMSSD"]-34.0)/18.3
+                hrv_adjusted[u"meanNN_Adjusted"] = (hrv[u"meanNN"]-930)/133
+                hrv_adjusted[u"sdNN_Adjusted"] = (hrv[u"sdNN"]-45.8)/18.8
+                hrv_adjusted[u"RMSSD_Adjusted"] = (hrv[u"RMSSD"]-34.0)/18.3
 
-                hrv_adjusted["LF_Adjusted"] = (hrv["LF"]-203)/262
-                hrv_adjusted["HF_Adjusted"] = (hrv["HF"]-101)/143
-                hrv_adjusted["LF/HF_Adjusted"] = (hrv["LF/HF"]-3.33)/3.47
+                hrv_adjusted[u"LF_Adjusted"] = (hrv[u"LF"]-203)/262
+                hrv_adjusted[u"HF_Adjusted"] = (hrv[u"HF"]-101)/143
+                hrv_adjusted[u"LF/HF_Adjusted"] = (hrv[u"LF/HF"]-3.33)/3.47
             else:
-                hrv_adjusted["meanNN_Adjusted"] = (hrv["meanNN"]-911)/128
-                hrv_adjusted["sdNN_Adjusted"] = (hrv["sdNN"]-33.0)/14.8
-                hrv_adjusted["RMSSD_Adjusted"] = (hrv["RMSSD"]-20.5)/11.0
+                hrv_adjusted[u"meanNN_Adjusted"] = (hrv[u"meanNN"]-911)/128
+                hrv_adjusted[u"sdNN_Adjusted"] = (hrv[u"sdNN"]-33.0)/14.8
+                hrv_adjusted[u"RMSSD_Adjusted"] = (hrv[u"RMSSD"]-20.5)/11.0
 
-                hrv_adjusted["LF_Adjusted"] = (hrv["LF"]-84)/115
-                hrv_adjusted["HF_Adjusted"] = (hrv["HF"]-29.5)/36.6
-                hrv_adjusted["LF/HF_Adjusted"] = (hrv["LF/HF"]-4.29)/4.06
-        if sex == "f":
+                hrv_adjusted[u"LF_Adjusted"] = (hrv[u"LF"]-84)/115
+                hrv_adjusted[u"HF_Adjusted"] = (hrv[u"HF"]-29.5)/36.6
+                hrv_adjusted[u"LF/HF_Adjusted"] = (hrv[u"LF/HF"]-4.29)/4.06
+        if sex == u"f":
             if age <= 49:
-                hrv_adjusted["meanNN_Adjusted"] = (hrv["meanNN"]-901)/117
-                hrv_adjusted["sdNN_Adjusted"] = (hrv["sdNN"]-44.9)/19.2
-                hrv_adjusted["RMSSD_Adjusted"] = (hrv["RMSSD"]-36.5)/20.1
+                hrv_adjusted[u"meanNN_Adjusted"] = (hrv[u"meanNN"]-901)/117
+                hrv_adjusted[u"sdNN_Adjusted"] = (hrv[u"sdNN"]-44.9)/19.2
+                hrv_adjusted[u"RMSSD_Adjusted"] = (hrv[u"RMSSD"]-36.5)/20.1
 
-                hrv_adjusted["LF_Adjusted"] = (hrv["LF"]-159)/181
-                hrv_adjusted["HF_Adjusted"] = (hrv["HF"]-125)/147
-                hrv_adjusted["LF/HF_Adjusted"] = (hrv["LF/HF"]-2.75)/2.93
+                hrv_adjusted[u"LF_Adjusted"] = (hrv[u"LF"]-159)/181
+                hrv_adjusted[u"HF_Adjusted"] = (hrv[u"HF"]-125)/147
+                hrv_adjusted[u"LF/HF_Adjusted"] = (hrv[u"LF/HF"]-2.75)/2.93
             else:
-                hrv_adjusted["meanNN_Adjusted"] = (hrv["meanNN"]-880)/115
-                hrv_adjusted["sdNN_Adjusted"] = (hrv["sdNN"]-31.6)/13.6
-                hrv_adjusted["RMSSD_Adjusted"] = (hrv["RMSSD"]-22.0)/13.2
+                hrv_adjusted[u"meanNN_Adjusted"] = (hrv[u"meanNN"]-880)/115
+                hrv_adjusted[u"sdNN_Adjusted"] = (hrv[u"sdNN"]-31.6)/13.6
+                hrv_adjusted[u"RMSSD_Adjusted"] = (hrv[u"RMSSD"]-22.0)/13.2
 
-                hrv_adjusted["LF_Adjusted"] = (hrv["LF"]-66)/83
-                hrv_adjusted["HF_Adjusted"] = (hrv["HF"]-41.4)/72.1
-                hrv_adjusted["LF/HF_Adjusted"] = (hrv["LF/HF"]-2.09)/2.05
+                hrv_adjusted[u"LF_Adjusted"] = (hrv[u"LF"]-66)/83
+                hrv_adjusted[u"HF_Adjusted"] = (hrv[u"HF"]-41.4)/72.1
+                hrv_adjusted[u"LF/HF_Adjusted"] = (hrv[u"LF/HF"]-2.09)/2.05
 
     return(hrv_adjusted)
 
@@ -761,7 +763,7 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
 # ==============================================================================
 # ==============================================================================
 def ecg_EventRelated(epoch, event_length=1, window_post=0):
-    """
+    u"""
     Extract event-related ECG changes.
 
     Parameters
@@ -821,18 +823,18 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
     -----------
     """
     def compute_features(variable, prefix, response):
-        """
+        u"""
         Internal function to compute features and avoid spaguetti code.
         """
-        response[prefix + "_Baseline"] = epoch[variable][0]
-        response[prefix + "_Min"] = epoch[variable][0:window_end].min()
-        response[prefix + "_MinDiff"] = response[prefix + "_Min"] - response[prefix + "_Baseline"]
-        response[prefix + "_MinTime"] = epoch[variable][0:window_end].idxmin()
-        response[prefix + "_Max"] = epoch[variable][0:window_end].max()
-        response[prefix + "_MaxDiff"] = response[prefix + "_Max"] - response[prefix + "_Baseline"]
-        response[prefix + "_MaxTime"] = epoch[variable][0:window_end].idxmax()
-        response[prefix + "_Mean"] = epoch[variable][0:window_end].mean()
-        response[prefix + "_MeanDiff"] = response[prefix + "_Mean"] - response[prefix + "_Baseline"]
+        response[prefix + u"_Baseline"] = epoch[variable][0]
+        response[prefix + u"_Min"] = epoch[variable][0:window_end].min()
+        response[prefix + u"_MinDiff"] = response[prefix + u"_Min"] - response[prefix + u"_Baseline"]
+        response[prefix + u"_MinTime"] = epoch[variable][0:window_end].idxmin()
+        response[prefix + u"_Max"] = epoch[variable][0:window_end].max()
+        response[prefix + u"_MaxDiff"] = response[prefix + u"_Max"] - response[prefix + u"_Baseline"]
+        response[prefix + u"_MaxTime"] = epoch[variable][0:window_end].idxmax()
+        response[prefix + u"_Mean"] = epoch[variable][0:window_end].mean()
+        response[prefix + u"_MeanDiff"] = response[prefix + u"_Mean"] - response[prefix + u"_Baseline"]
 
         return(response)
 
@@ -842,86 +844,86 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
 
     # Heart Rate
     # =============
-    if "Heart_Rate" in epoch.columns:
-        ECG_Response = compute_features("Heart_Rate", "ECG_Heart_Rate", ECG_Response)
+    if u"Heart_Rate" in epoch.columns:
+        ECG_Response = compute_features(u"Heart_Rate", u"ECG_Heart_Rate", ECG_Response)
 #
     # Cardiac Phase
     # =============
-    if "ECG_Systole" in epoch.columns:
-        ECG_Response["ECG_Phase_Systole"] = epoch["ECG_Systole"][0]
+    if u"ECG_Systole" in epoch.columns:
+        ECG_Response[u"ECG_Phase_Systole"] = epoch[u"ECG_Systole"][0]
 
         # Identify beginning and end
         systole_beg = np.nan
         systole_end = np.nan
         for i in epoch[0:window_end].index:
-            if epoch["ECG_Systole"][i] != ECG_Response["ECG_Phase_Systole"]:
+            if epoch[u"ECG_Systole"][i] != ECG_Response[u"ECG_Phase_Systole"]:
                 systole_end = i
                 break
         for i in epoch[:0].index[::-1]:
-            if epoch["ECG_Systole"][i] != ECG_Response["ECG_Phase_Systole"]:
+            if epoch[u"ECG_Systole"][i] != ECG_Response[u"ECG_Phase_Systole"]:
                 systole_beg = i
                 break
 
         # Compute percentage
-        ECG_Response["ECG_Phase_Systole_Completion"] = -1*systole_beg/(systole_end - systole_beg)*100
+        ECG_Response[u"ECG_Phase_Systole_Completion"] = -1*systole_beg/(systole_end - systole_beg)*100
 
 
     # RR Interval
     # ==================
-    if "ECG_RR_Interval" in epoch.columns:
-        ECG_Response = compute_features("ECG_RR_Interval", "ECG_RRi", ECG_Response)
+    if u"ECG_RR_Interval" in epoch.columns:
+        ECG_Response = compute_features(u"ECG_RR_Interval", u"ECG_RRi", ECG_Response)
 
 
     # RSA
     # ==========
-    if "RSA" in epoch.columns:
-        ECG_Response = compute_features("RSA", "ECG_RSA", ECG_Response)
+    if u"RSA" in epoch.columns:
+        ECG_Response = compute_features(u"RSA", u"ECG_RSA", ECG_Response)
 
     # HRV
     # ====
-    if "ECG_R_Peaks" in epoch.columns:
-        rpeaks = epoch[epoch["ECG_R_Peaks"]==1][0:event_length].index*1000
-        hrv = ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time"])
+    if u"ECG_R_Peaks" in epoch.columns:
+        rpeaks = epoch[epoch[u"ECG_R_Peaks"]==1][0:event_length].index*1000
+        hrv = ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=[u"time"])
 
         # HRV time domain feature computation
         for key in hrv:
             if isinstance(hrv[key], float):  # Avoid storing series or dataframes
-                ECG_Response["ECG_HRV_" + key] = hrv[key]
+                ECG_Response[u"ECG_HRV_" + key] = hrv[key]
 
         # Computation for baseline
         if epoch.index[0] > -4:  # Sanity check
-            print("NeuroKit Warning: ecg_EventRelated(): your epoch starts less than 4 seconds before stimulus onset. That's too short to compute HRV baseline features.")
+            print u"NeuroKit Warning: ecg_EventRelated(): your epoch starts less than 4 seconds before stimulus onset. That's too short to compute HRV baseline features."
         else:
-            rpeaks = epoch[epoch["ECG_R_Peaks"]==1][:0].index*1000
-            hrv = ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time"])
+            rpeaks = epoch[epoch[u"ECG_R_Peaks"]==1][:0].index*1000
+            hrv = ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=[u"time"])
 
             for key in hrv:
                 if isinstance(hrv[key], float):  # Avoid storing series or dataframes
-                    ECG_Response["ECG_HRV_" + key + "_Baseline"] = hrv[key]
+                    ECG_Response[u"ECG_HRV_" + key + u"_Baseline"] = hrv[key]
 
             # Compute differences between features and baseline
-            keys = [key for key in ECG_Response.keys() if '_Baseline' in key]  # Find keys
-            keys = [key for key in keys if 'ECG_HRV_' in key]
-            keys = [s.replace('_Baseline', '') for s in keys]  # Remove baseline part
+            keys = [key for key in ECG_Response.keys() if u'_Baseline' in key]  # Find keys
+            keys = [key for key in keys if u'ECG_HRV_' in key]
+            keys = [s.replace(u'_Baseline', u'') for s in keys]  # Remove baseline part
             for key in keys:
                 try:
-                    ECG_Response[key + "_Diff"] = ECG_Response[key] - ECG_Response[key + "_Baseline"]
+                    ECG_Response[key + u"_Diff"] = ECG_Response[key] - ECG_Response[key + u"_Baseline"]
                 except KeyError:
-                    ECG_Response[key + "_Diff"] = np.nan
+                    ECG_Response[key + u"_Diff"] = np.nan
 
 
 
-    if "ECG_HRV_VHF" in epoch.columns:
-        ECG_Response = compute_features("ECG_HRV_VHF", "ECG_HRV_VHF", ECG_Response)
+    if u"ECG_HRV_VHF" in epoch.columns:
+        ECG_Response = compute_features(u"ECG_HRV_VHF", u"ECG_HRV_VHF", ECG_Response)
 
-    if "ECG_HRV_HF" in epoch.columns:
-        ECG_Response = compute_features("ECG_HRV_HF", "ECG_HRV_HF", ECG_Response)
+    if u"ECG_HRV_HF" in epoch.columns:
+        ECG_Response = compute_features(u"ECG_HRV_HF", u"ECG_HRV_HF", ECG_Response)
 
-    if "ECG_HRV_LF" in epoch.columns:
-        ECG_Response = compute_features("ECG_HRV_LF", "ECG_HRV_LF", ECG_Response)
+    if u"ECG_HRV_LF" in epoch.columns:
+        ECG_Response = compute_features(u"ECG_HRV_LF", u"ECG_HRV_LF", ECG_Response)
 
-    if "ECG_HRV_VLF" in epoch.columns:
-        ECG_Response = compute_features("ECG_HRV_VLF", "ECG_HRV_VLF", ECG_Response)
+    if u"ECG_HRV_VLF" in epoch.columns:
+        ECG_Response = compute_features(u"ECG_HRV_VLF", u"ECG_HRV_VLF", ECG_Response)
 
 
 

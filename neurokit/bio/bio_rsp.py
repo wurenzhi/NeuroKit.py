@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
+u"""
 Subsubmodule for ecg processing.
 """
+from __future__ import division
+from __future__ import absolute_import
 import numpy as np
 import pandas as pd
 import biosppy
@@ -19,7 +21,7 @@ from ..signal import *
 # ==============================================================================
 # ==============================================================================
 def rsp_process(rsp, sampling_rate=1000):
-    """
+    u"""
     Automated processing of RSP signals.
 
     Parameters
@@ -58,92 +60,91 @@ def rsp_process(rsp, sampling_rate=1000):
 
     - BioSPPY: https://github.com/PIA-Group/BioSPPy
     """
-    processed_rsp = {"df": pd.DataFrame({"RSP_Raw": np.array(rsp)})}
+    processed_rsp = {u"df": pd.DataFrame({u"RSP_Raw": np.array(rsp)})}
 
     biosppy_rsp = dict(biosppy.signals.resp.resp(rsp, sampling_rate=sampling_rate, show=False))
-    processed_rsp["df"]["RSP_Filtered"] = biosppy_rsp["filtered"]
+    processed_rsp[u"df"][u"RSP_Filtered"] = biosppy_rsp[u"filtered"]
 
             #   RSP Rate
 #   ============
-    rsp_rate = biosppy_rsp["resp_rate"]*60  # Get RSP rate value (in cycles per minute)
-    rsp_times = biosppy_rsp["resp_rate_ts"]   # the time (in sec) of each rsp rate value
+    rsp_rate = biosppy_rsp[u"resp_rate"]*60  # Get RSP rate value (in cycles per minute)
+    rsp_times = biosppy_rsp[u"resp_rate_ts"]   # the time (in sec) of each rsp rate value
     rsp_times = np.round(rsp_times*sampling_rate).astype(int)  # Convert to timepoints
     try:
         rsp_rate = discrete_to_continuous(rsp_rate, rsp_times, sampling_rate)  # Interpolation using 3rd order spline
-        processed_rsp["df"]["RSP_Rate"] = rsp_rate
+        processed_rsp[u"df"][u"RSP_Rate"] = rsp_rate
     except TypeError:
-        print("NeuroKit Warning: rsp_process(): Sequence too short to compute respiratory rate.")
-        processed_rsp["df"]["RSP_Rate"] = np.nan
+        print u"NeuroKit Warning: rsp_process(): Sequence too short to compute respiratory rate."
+        processed_rsp[u"df"][u"RSP_Rate"] = np.nan
 
-
-
+    '''
         # psd powers
     #   ============
     window_size_psd = 300
     freq_bands = {
-        "0_0.1": [0.0001, 0.1],
-        "0.1_0.2": [0.1, 0.2],
-        "0.2_0.3": [0.2, 0.3],
-        "0.3_0.4": [0.3, 0.4],
-        "0.4_0.5": [0.4, 0.5]}
+        u"0_0.1": [0.0001, 0.1],
+        u"0.1_0.2": [0.1, 0.2],
+        u"0.2_0.3": [0.2, 0.3],
+        u"0.3_0.4": [0.3, 0.4],
+        u"0.4_0.5": [0.4, 0.5]}
 
 
 
     for col in freq_bands:  # initialize columns to nan
-        processed_rsp["df"][col] = np.nan
+        processed_rsp[u"df"][col] = np.nan
 
-
-    for i in range(len(rsp)):
-        if window_size_psd <= i :
+   
+    for i in xrange(len(rsp)):
+        if window_size_psd <= i:
             power, freq = mne.time_frequency.psd_array_multitaper(rsp[i - window_size_psd:i+window_size_psd], sfreq=sampling_rate, fmin=0,
                                                                   fmax=0.5, adaptive=False,
-                                                                  normalization='length')
+                                                                  normalization=u'length')
             for band in freq_bands:
-                processed_rsp["df"].set_value(col=band,index=i,value=power_in_band(power, freq, freq_bands[band]))
+                processed_rsp[u"df"].set_value(col=band,index=i,value=power_in_band(power, freq, freq_bands[band]))
 
 # statistical features
 #   ============
     window_size_statistics = 300
-    statistics_features = ['SEM', 'MFD', 'SDFD', 'MSD', 'SDSD', 'SDBA', 'MAXRSP', 'MINRSP', 'DMMRSP','Skewness', 'Kurtosis']
+    statistics_features = [u'SEM', u'MFD', u'SDFD', u'MSD', u'SDSD', u'SDBA', u'MAXRSP', u'MINRSP', u'DMMRSP',u'Skewness', u'Kurtosis']
     for col in statistics_features:  # initialize columns to nan
-        processed_rsp["df"][col] = np.nan
-    for i in range(len(rsp)):
+        processed_rsp[u"df"][col] = np.nan
+    for i in xrange(len(rsp)):
         if window_size_statistics <= i :
-            data_rspr = processed_rsp['df']['RSP_Rate'][i - window_size_statistics :i]
+            data_rspr = processed_rsp[u'df'][u'RSP_Rate'][i - window_size_statistics :i]
             data_waveform = rsp[i - window_size_statistics:i]
-            processed_rsp["df"].set_value(col='SEM', index=i, value=np.std(data_rspr) / np.sqrt(window_size_statistics))
-            processed_rsp["df"].set_value(col='MFD', index=i, value=np.mean(np.diff(data_rspr)))
-            processed_rsp["df"].set_value(col='SDFD', index=i, value=np.std(np.diff(data_rspr)))
-            processed_rsp["df"].set_value(col='MSD', index=i, value=np.mean(np.diff(data_rspr, 2)))
-            processed_rsp["df"].set_value(col='SDSD', index=i, value=np.std(np.diff(data_rspr, 2)))
-            processed_rsp['df'].set_value(col='SDBA',index=i, value=np.std(data_waveform))
-            processed_rsp['df'].set_value(col='MAXRSP', index=i, value=np.max(data_waveform))
-            processed_rsp['df'].set_value(col='MINRSP', index=i, value=np.min(data_waveform))
-            processed_rsp['df'].set_value(col='DMMRSP', index=i, value= processed_rsp['df']['MAXRSP'] - processed_rsp['df']['MINRSP'])
-            processed_rsp['df'].set_value(col='Skewness', index=i, value=scipy.stats.skew(data_rspr))
-            processed_rsp['df'].set_value(col='Kurtosis', index=i, value=scipy.stats.kurtosis(data_rspr))
-    
+            processed_rsp[u"df"].set_value(col=u'SEM', index=i, value=np.std(data_rspr) / np.sqrt(window_size_statistics))
+            processed_rsp[u"df"].set_value(col=u'MFD', index=i, value=np.mean(np.diff(data_rspr)))
+            processed_rsp[u"df"].set_value(col=u'SDFD', index=i, value=np.std(np.diff(data_rspr)))
+            processed_rsp[u"df"].set_value(col=u'MSD', index=i, value=np.mean(np.diff(data_rspr, 2)))
+            processed_rsp[u"df"].set_value(col=u'SDSD', index=i, value=np.std(np.diff(data_rspr, 2)))
+            processed_rsp[u'df'].set_value(col=u'SDBA',index=i, value=np.std(data_waveform))
+            processed_rsp[u'df'].set_value(col=u'MAXRSP', index=i, value=np.max(data_waveform))
+            processed_rsp[u'df'].set_value(col=u'MINRSP', index=i, value=np.min(data_waveform))
+            processed_rsp[u'df'].set_value(col=u'DMMRSP', index=i, value= processed_rsp[u'df'][u'MAXRSP'] - processed_rsp[u'df'][u'MINRSP'])
+            processed_rsp[u'df'].set_value(col=u'Skewness', index=i, value=scipy.stats.skew(data_rspr))
+            processed_rsp[u'df'].set_value(col=u'Kurtosis', index=i, value=scipy.stats.kurtosis(data_rspr))
+    '''
     #   RSP Cycles
 #   ===========================
-    rsp_cycles = rsp_find_cycles(biosppy_rsp["filtered"])
-    processed_rsp["df"]["RSP_Inspiration"] = rsp_cycles["RSP_Inspiration"]
+    rsp_cycles = rsp_find_cycles(biosppy_rsp[u"filtered"])
+    processed_rsp[u"df"][u"RSP_Inspiration"] = rsp_cycles[u"RSP_Inspiration"]
 
-    processed_rsp["RSP"] = {}
-    processed_rsp["RSP"]["Cycles_Onsets"] = rsp_cycles["RSP_Cycles_Onsets"]
-    processed_rsp["RSP"]["Expiration_Onsets"] = rsp_cycles["RSP_Expiration_Onsets"]
-    processed_rsp["RSP"]["Cycles_Length"] = rsp_cycles["RSP_Cycles_Length"]/sampling_rate
+    processed_rsp[u"RSP"] = {}
+    processed_rsp[u"RSP"][u"Cycles_Onsets"] = rsp_cycles[u"RSP_Cycles_Onsets"]
+    processed_rsp[u"RSP"][u"Expiration_Onsets"] = rsp_cycles[u"RSP_Expiration_Onsets"]
+    processed_rsp[u"RSP"][u"Cycles_Length"] = rsp_cycles[u"RSP_Cycles_Length"]/sampling_rate
 
 #   RSP Variability
 #   ===========================
-    rsp_diff = processed_rsp["RSP"]["Cycles_Length"]
+    rsp_diff = processed_rsp[u"RSP"][u"Cycles_Length"]
 
-    processed_rsp["RSP"]["Respiratory_Variability"] = {}
-    processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_SD"] = np.std(rsp_diff)
-    processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_RMSSD"] = np.sqrt(np.mean(rsp_diff ** 2))
-    processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_RMSSD_Log"] = np.log(processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_RMSSD"])
+    processed_rsp[u"RSP"][u"Respiratory_Variability"] = {}
+    processed_rsp[u"RSP"][u"Respiratory_Variability"][u"RSPV_SD"] = np.std(rsp_diff)
+    processed_rsp[u"RSP"][u"Respiratory_Variability"][u"RSPV_RMSSD"] = np.sqrt(np.mean(rsp_diff ** 2))
+    processed_rsp[u"RSP"][u"Respiratory_Variability"][u"RSPV_RMSSD_Log"] = np.log(processed_rsp[u"RSP"][u"Respiratory_Variability"][u"RSPV_RMSSD"])
 
 
-
+    print "processed_rsp"
     return(processed_rsp)
 
 
@@ -159,7 +160,7 @@ def rsp_process(rsp, sampling_rate=1000):
 # ==============================================================================
 # ==============================================================================
 def rsp_find_cycles(signal):
-    """
+    u"""
     Find Respiratory cycles onsets, durations and phases.
 
     Parameters
@@ -202,27 +203,27 @@ def rsp_find_cycles(signal):
     phases_indices = []
     for i in zeros:
         if gradient[i+1] > gradient[i-1]:
-            phases_indices.append("Inspiration")
+            phases_indices.append(u"Inspiration")
         else:
-            phases_indices.append("Expiration")
+            phases_indices.append(u"Expiration")
 
     # Select cycles (inspiration) and expiration onsets
     inspiration_onsets = []
     expiration_onsets = []
     for index, onset in enumerate(zeros):
-        if phases_indices[index] == "Inspiration":
+        if phases_indices[index] == u"Inspiration":
             inspiration_onsets.append(onset)
-        if phases_indices[index] == "Expiration":
+        if phases_indices[index] == u"Expiration":
             expiration_onsets.append(onset)
 
 
     # Create a continuous inspiration signal
     # ---------------------------------------
     # Find initial phase
-    if phases_indices[0] == "Inspiration":
-        phase = "Expiration"
+    if phases_indices[0] == u"Inspiration":
+        phase = u"Expiration"
     else:
-        phase = "Inspiration"
+        phase = u"Inspiration"
 
     inspiration = []
     phase_counter = 0
@@ -234,24 +235,24 @@ def rsp_find_cycles(signal):
         inspiration.append(phase)
 
     # Find last phase
-    if phases_indices[len(phases_indices)-1] == "Inspiration":
-        last_phase = "Expiration"
+    if phases_indices[len(phases_indices)-1] == u"Inspiration":
+        last_phase = u"Expiration"
     else:
-        last_phase = "Inspiration"
+        last_phase = u"Inspiration"
     inspiration = np.array(inspiration)
     inspiration[max(zeros):] = last_phase
 
     # Convert to binary
-    inspiration[inspiration == "Inspiration"] = 1
-    inspiration[inspiration == "Expiration"] = 0
+    inspiration[inspiration == u"Inspiration"] = 1
+    inspiration[inspiration == u"Expiration"] = 0
     inspiration = pd.to_numeric(inspiration)
 
     cycles_length = np.diff(inspiration_onsets)
 
-    rsp_cycles = {"RSP_Inspiration": inspiration,
-                  "RSP_Expiration_Onsets": expiration_onsets,
-                  "RSP_Cycles_Onsets": inspiration_onsets,
-                  "RSP_Cycles_Length": cycles_length}
+    rsp_cycles = {u"RSP_Inspiration": inspiration,
+                  u"RSP_Expiration_Onsets": expiration_onsets,
+                  u"RSP_Cycles_Onsets": inspiration_onsets,
+                  u"RSP_Cycles_Length": cycles_length}
 
     return(rsp_cycles)
 
@@ -266,7 +267,7 @@ def rsp_find_cycles(signal):
 # ==============================================================================
 # ==============================================================================
 def rsp_EventRelated(epoch, event_length, window_post=4):
-    """
+    u"""
     Extract event-related respiratory (RSP) changes.
 
     Parameters
@@ -337,36 +338,36 @@ def rsp_EventRelated(epoch, event_length, window_post=4):
 
     # RSP Rate
     # =============
-    if "RSP_Rate" in epoch.columns:
-        RSP_Response["RSP_Rate_Baseline"] = epoch["RSP_Rate"].ix[0]
-        RSP_Response["RSP_Rate_Min"] = epoch["RSP_Rate"].ix[0:window_end].min()
-        RSP_Response["RSP_Rate_MinDiff"] = RSP_Response["RSP_Rate_Min"] - RSP_Response["RSP_Rate_Baseline"]
-        RSP_Response["RSP_Rate_MinTime"] = epoch["RSP_Rate"].ix[0:window_end].idxmin()
-        RSP_Response["RSP_Rate_Max"] = epoch["RSP_Rate"].ix[0:window_end].max()
-        RSP_Response["RSP_Rate_MaxDiff"] = RSP_Response["RSP_Rate_Max"] - RSP_Response["RSP_Rate_Baseline"]
-        RSP_Response["RSP_Rate_MaxTime"] = epoch["RSP_Rate"].ix[0:window_end].idxmax()
-        RSP_Response["RSP_Rate_Mean"] = epoch["RSP_Rate"].ix[0:window_end].mean()
-        RSP_Response["RSP_Rate_MeanDiff"] = RSP_Response["RSP_Rate_Mean"] - RSP_Response["RSP_Rate_Baseline"]
+    if u"RSP_Rate" in epoch.columns:
+        RSP_Response[u"RSP_Rate_Baseline"] = epoch[u"RSP_Rate"].ix[0]
+        RSP_Response[u"RSP_Rate_Min"] = epoch[u"RSP_Rate"].ix[0:window_end].min()
+        RSP_Response[u"RSP_Rate_MinDiff"] = RSP_Response[u"RSP_Rate_Min"] - RSP_Response[u"RSP_Rate_Baseline"]
+        RSP_Response[u"RSP_Rate_MinTime"] = epoch[u"RSP_Rate"].ix[0:window_end].idxmin()
+        RSP_Response[u"RSP_Rate_Max"] = epoch[u"RSP_Rate"].ix[0:window_end].max()
+        RSP_Response[u"RSP_Rate_MaxDiff"] = RSP_Response[u"RSP_Rate_Max"] - RSP_Response[u"RSP_Rate_Baseline"]
+        RSP_Response[u"RSP_Rate_MaxTime"] = epoch[u"RSP_Rate"].ix[0:window_end].idxmax()
+        RSP_Response[u"RSP_Rate_Mean"] = epoch[u"RSP_Rate"].ix[0:window_end].mean()
+        RSP_Response[u"RSP_Rate_MeanDiff"] = RSP_Response[u"RSP_Rate_Mean"] - RSP_Response[u"RSP_Rate_Baseline"]
 
 
     # RSP Phase
     # =============
-    if "RSP_Inspiration" in epoch.columns:
-        RSP_Response["RSP_Inspiration"] = epoch["RSP_Inspiration"].ix[0]
+    if u"RSP_Inspiration" in epoch.columns:
+        RSP_Response[u"RSP_Inspiration"] = epoch[u"RSP_Inspiration"].ix[0]
 
         # Identify beginning and end
         phase_beg = np.nan
         phase_end = np.nan
         for i in epoch[0:window_end].index:
-            if epoch["RSP_Inspiration"].ix[i] != RSP_Response["RSP_Inspiration"]:
+            if epoch[u"RSP_Inspiration"].ix[i] != RSP_Response[u"RSP_Inspiration"]:
                 phase_end = i
                 break
         for i in epoch[:0].index[::-1]:
-            if epoch["RSP_Inspiration"].ix[i] != RSP_Response["RSP_Inspiration"]:
+            if epoch[u"RSP_Inspiration"].ix[i] != RSP_Response[u"RSP_Inspiration"]:
                 phase_beg = i
                 break
 
-        RSP_Response["RSP_Inspiration_Completion"] = -1*phase_beg/(phase_end - phase_beg)*100
+        RSP_Response[u"RSP_Inspiration_Completion"] = -1*phase_beg/(phase_end - phase_beg)*100
 
 
     return(RSP_Response)

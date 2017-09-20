@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
+from __future__ import absolute_import
 from .statistics import normal_range
 
 import numpy as np
@@ -15,8 +17,8 @@ import matplotlib.pyplot as plt
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def plot_polarbar(scores, labels=None, labels_size=15, colors="default", distribution_means=None, distribution_sds=None, treshold=1.28, fig_size=(15, 15)):
-    """
+def plot_polarbar(scores, labels=None, labels_size=15, colors=u"default", distribution_means=None, distribution_sds=None, treshold=1.28, fig_size=(15, 15)):
+    u"""
     Polar bar chart.
 
     Parameters
@@ -70,18 +72,18 @@ def plot_polarbar(scores, labels=None, labels_size=15, colors="default", distrib
         try:
             scores = [scores[key] for key in labels]
         except KeyError:
-            print("NeuroKit Error: plot_polarbar(): labels and scores keys not matching. Recheck them.")
+            print u"NeuroKit Error: plot_polarbar(): labels and scores keys not matching. Recheck them."
 
 
 
     # Parameters
-    if colors == "default":
+    if colors == u"default":
         if len(scores) < 9:
-            colors = ["#f44336", "#9C27B0", "#3F51B5","#03A9F4", "#009688", "#8BC34A", "#FFEB3B", "#FF9800", "#795548"]
+            colors = [u"#f44336", u"#9C27B0", u"#3F51B5",u"#03A9F4", u"#009688", u"#8BC34A", u"#FFEB3B", u"#FF9800", u"#795548"]
         else:
             colors = None
     if labels is None:
-        labels = range(len(scores))
+        labels = xrange(len(scores))
 
     N = len(scores)
     theta = np.linspace(0.0, -2 * np.pi, N, endpoint=False)
@@ -92,10 +94,10 @@ def plot_polarbar(scores, labels=None, labels_size=15, colors="default", distrib
     # Main
     plot = plt.figure(figsize=fig_size)
 
-    layer1 = plot.add_subplot(111, projection="polar")
+    layer1 = plot.add_subplot(111, projection=u"polar")
     bars1 = layer1.bar(theta+np.pi/len(scores), scores, width=width, bottom=0.0)
 
-    layer1.yaxis.set_ticks(range(11))
+    layer1.yaxis.set_ticks(xrange(11))
     layer1.yaxis.set_ticklabels([])
 
     layer1.xaxis.set_ticks(theta+np.pi/len(scores))
@@ -127,6 +129,6 @@ def plot_polarbar(scores, labels=None, labels_size=15, colors="default", distrib
         layer2.xaxis.set_ticklabels(labels, fontsize=labels_size)
 
         for index, bar in enumerate(bars2):
-            bar.set_facecolor("#607D8B")
+            bar.set_facecolor(u"#607D8B")
             bar.set_alpha(0.3)
     return(plot)

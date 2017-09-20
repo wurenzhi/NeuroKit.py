@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
+from __future__ import absolute_import
 import pandas as pd
 import numpy as np
 import biosppy
@@ -13,8 +15,8 @@ import scipy
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def emg_process(emg, sampling_rate=1000, emg_names=None, envelope_freqs=[10, 400], envelope_lfreq=4, activation_treshold="default", activation_n_above=0.25, activation_n_below=1):
-    """
+def emg_process(emg, sampling_rate=1000, emg_names=None, envelope_freqs=[10, 400], envelope_lfreq=4, activation_treshold=u"default", activation_n_above=0.25, activation_n_below=1):
+    u"""
     Automated processing of EMG signal.
 
     Parameters
@@ -85,38 +87,38 @@ def emg_process(emg, sampling_rate=1000, emg_names=None, envelope_freqs=[10, 400
     if emg_names is None:
         if np.shape(emg)[1]>1:
             emg_names = []
-            for index in range(np.shape(emg)[1]):
-                emg_names.append("EMG_" + str(index))
+            for index in xrange(np.shape(emg)[1]):
+                emg_names.append(u"EMG_" + unicode(index))
         else:
-            emg_names = ["EMG"]
+            emg_names = [u"EMG"]
 
 
-    processed_emg = {"df": pd.DataFrame()}
+    processed_emg = {u"df": pd.DataFrame()}
     for index, emg_chan in enumerate(emg.T):
         # Store Raw signal
-        processed_emg["df"][emg_names[index] + "_Raw"] = emg_chan
+        processed_emg[u"df"][emg_names[index] + u"_Raw"] = emg_chan
 
         # Compute several features using biosppy
         biosppy_emg = dict(biosppy.emg.emg(emg_chan, sampling_rate=sampling_rate, show=False))
 
         # Store EMG pulse onsets
         pulse_onsets = np.array([np.nan]*len(emg))
-        if len(biosppy_emg['onsets']) > 0:
-            pulse_onsets[biosppy_emg['onsets']] = 1
-        processed_emg["df"][emg_names[index] + "_Pulse_Onsets"] = pulse_onsets
+        if len(biosppy_emg[u'onsets']) > 0:
+            pulse_onsets[biosppy_emg[u'onsets']] = 1
+        processed_emg[u"df"][emg_names[index] + u"_Pulse_Onsets"] = pulse_onsets
 
-        processed_emg["df"][emg_names[index] + "_Filtered"] = biosppy_emg["filtered"]
+        processed_emg[u"df"][emg_names[index] + u"_Filtered"] = biosppy_emg[u"filtered"]
         processed_emg[emg_names[index]] = {}
-        processed_emg[emg_names[index]]["EMG_Pulse_Onsets"] = biosppy_emg['onsets']
+        processed_emg[emg_names[index]][u"EMG_Pulse_Onsets"] = biosppy_emg[u'onsets']
 
         # Envelope
-        envelope = emg_linear_envelope(biosppy_emg["filtered"], sampling_rate=sampling_rate, freqs=envelope_freqs, lfreq=envelope_lfreq)
-        processed_emg["df"][emg_names[index] + "_Envelope"] = envelope
+        envelope = emg_linear_envelope(biosppy_emg[u"filtered"], sampling_rate=sampling_rate, freqs=envelope_freqs, lfreq=envelope_lfreq)
+        processed_emg[u"df"][emg_names[index] + u"_Envelope"] = envelope
 
         # Activation
-        if activation_treshold == "default":
+        if activation_treshold == u"default":
             activation_treshold = 1*np.std(envelope)
-        processed_emg["df"][emg_names[index] + "_Activation"] = emg_find_activation(envelope, sampling_rate=sampling_rate, threshold=1*np.std(envelope), n_above=activation_n_above, n_below=activation_n_below)
+        processed_emg[u"df"][emg_names[index] + u"_Activation"] = emg_find_activation(envelope, sampling_rate=sampling_rate, threshold=1*np.std(envelope), n_above=activation_n_above, n_below=activation_n_below)
 
     return(processed_emg)
 
@@ -131,7 +133,7 @@ def emg_process(emg, sampling_rate=1000, emg_names=None, envelope_freqs=[10, 400
 # ==============================================================================
 # ==============================================================================
 def emg_tkeo(emg):
-    """
+    u"""
     Calculates the Teager–Kaiser Energy operator.
 
     Parameters
@@ -183,7 +185,7 @@ def emg_tkeo(emg):
 # ==============================================================================
 # ==============================================================================
 def emg_linear_envelope(emg, sampling_rate=1000, freqs=[10, 400], lfreq=4):
-    r"""Calculate the linear envelope of a signal.
+    ur"""Calculate the linear envelope of a signal.
 
     Parameters
     ----------
@@ -222,13 +224,13 @@ def emg_linear_envelope(emg, sampling_rate=1000, freqs=[10, 400], lfreq=4):
 
     if np.size(freqs) == 2:
         # band-pass filter
-        b, a = scipy.signal.butter(2, np.array(freqs)/(sampling_rate/2.), btype = 'bandpass')
+        b, a = scipy.signal.butter(2, np.array(freqs)/(sampling_rate/2.), btype = u'bandpass')
         emg = scipy.signal.filtfilt(b, a, emg)
     if np.size(lfreq) == 1:
         # full-wave rectification
         envelope = abs(emg)
         # low-pass Butterworth filter
-        b, a = scipy.signal.butter(2, np.array(lfreq)/(sampling_rate/2.), btype = 'low')
+        b, a = scipy.signal.butter(2, np.array(lfreq)/(sampling_rate/2.), btype = u'low')
         envelope = scipy.signal.filtfilt(b, a, envelope)
 
     return (envelope)
@@ -243,7 +245,7 @@ def emg_linear_envelope(emg, sampling_rate=1000, freqs=[10, 400], lfreq=4):
 # ==============================================================================
 # ==============================================================================
 def emg_find_activation(envelope, sampling_rate=1000, threshold=0, n_above=0.25, n_below=1):
-    """Detects onset in data based on amplitude threshold.
+    u"""Detects onset in data based on amplitude threshold.
 
     Parameters
     ----------
@@ -278,7 +280,7 @@ def emg_find_activation(envelope, sampling_rate=1000, threshold=0, n_above=0.25,
     n_below = n_below*sampling_rate
 
 
-    envelope = np.atleast_1d(envelope).astype('float64')
+    envelope = np.atleast_1d(envelope).astype(u'float64')
     # deal with NaN's (by definition, NaN's are not greater than threshold)
     envelope[np.isnan(envelope)] = -np.inf
     # indices of data greater than or equal to threshold

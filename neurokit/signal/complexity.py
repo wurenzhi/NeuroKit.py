@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
+from __future__ import absolute_import
 import nolds
 import numpy as np
+from itertools import izip
 
 # ==============================================================================
 # ==============================================================================
@@ -10,8 +13,8 @@ import numpy as np
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale=True, spectral=True, svd=True, correlation=True, higushi=True, petrosian=True, fisher=True, hurst=True, dfa=True, lyap_r=False, lyap_e=False, emb_dim=2, tolerance="default", k_max=8, bands=None, tau=1):
-    """
+def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale=True, spectral=True, svd=True, correlation=True, higushi=True, petrosian=True, fisher=True, hurst=True, dfa=True, lyap_r=False, lyap_e=False, emb_dim=2, tolerance=u"default", k_max=8, bands=None, tau=1):
+    u"""
     Computes several chaos/complexity indices of a signal (including entropy, fractal dimensions, Hurst and Lyapunov exponent etc.).
 
     Parameters
@@ -122,7 +125,7 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
     - Costa, M., Goldberger, A. L., & Peng, C. K. (2005). Multiscale entropy analysis of biological signals. Physical review E, 71(2), 021906.
     """
 
-    if tolerance == "default":
+    if tolerance == u"default":
         tolerance = 0.2*np.std(signal)
 
     # Initialize results storing
@@ -134,113 +137,113 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
     # Shannon
     if shannon is True:
         try:
-            complexity["Entropy_Shannon"] = complexity_entropy_shannon(signal)
+            complexity[u"Entropy_Shannon"] = complexity_entropy_shannon(signal)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute Shannon entropy.")
-            complexity["Entropy_Shannon"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute Shannon entropy."
+            complexity[u"Entropy_Shannon"] = np.nan
 
     # Sampen
     if sampen is True:
         try:
-            complexity["Entropy_Sample"] = nolds.sampen(signal, emb_dim, tolerance, dist="chebychev", debug_plot=False, plot_file=None)
+            complexity[u"Entropy_Sample"] = nolds.sampen(signal, emb_dim, tolerance, dist=u"chebychev", debug_plot=False, plot_file=None)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute sample entropy (sampen).")
-            complexity["Entropy_Sample"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute sample entropy (sampen)."
+            complexity[u"Entropy_Sample"] = np.nan
 
 
     # multiscale
     if multiscale is True:
         try:
-            complexity["Entropy_Multiscale"] = complexity_entropy_multiscale(signal, emb_dim, tolerance)
+            complexity[u"Entropy_Multiscale"] = complexity_entropy_multiscale(signal, emb_dim, tolerance)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute Multiscale Entropy (MSE).")
-            complexity["Entropy_Multiscale"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute Multiscale Entropy (MSE)."
+            complexity[u"Entropy_Multiscale"] = np.nan
 
     # spectral
     if spectral is True:
         try:
-            complexity["Entropy_Spectral"] = complexity_entropy_spectral(signal, sampling_rate=sampling_rate, bands=bands)
+            complexity[u"Entropy_Spectral"] = complexity_entropy_spectral(signal, sampling_rate=sampling_rate, bands=bands)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute Spectral Entropy.")
-            complexity["Entropy_Spectral"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute Spectral Entropy."
+            complexity[u"Entropy_Spectral"] = np.nan
 
     # SVD
     if svd is True:
         try:
-            complexity["Entropy_SVD"] = complexity_entropy_svd(signal, tau=tau, emb_dim=emb_dim)
+            complexity[u"Entropy_SVD"] = complexity_entropy_svd(signal, tau=tau, emb_dim=emb_dim)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute SVD Entropy.")
-            complexity["Entropy_SVD"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute SVD Entropy."
+            complexity[u"Entropy_SVD"] = np.nan
 
 # ------------------------------------------------------------------------------
     # fractal_dim
     if correlation is True:
         try:
-            complexity["Fractal_Dimension_Correlation"] = nolds.corr_dim(signal, emb_dim, rvals=None, fit="RANSAC", debug_plot=False, plot_file=None)
+            complexity[u"Fractal_Dimension_Correlation"] = nolds.corr_dim(signal, emb_dim, rvals=None, fit=u"RANSAC", debug_plot=False, plot_file=None)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute fractal_dim.")
-            complexity["Fractal_Dimension_Correlation"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute fractal_dim."
+            complexity[u"Fractal_Dimension_Correlation"] = np.nan
 
     # higushi
     if higushi is True:
         try:
-            complexity["Fractal_Dimension_Higushi"] = complexity_fd_higushi(signal, k_max)
+            complexity[u"Fractal_Dimension_Higushi"] = complexity_fd_higushi(signal, k_max)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute higushi.")
-            complexity["Fractal_Dimension_Higushi"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute higushi."
+            complexity[u"Fractal_Dimension_Higushi"] = np.nan
 
     # petrosian
     if petrosian is True:
         try:
-            complexity["Fractal_Dimension_Petrosian"] = complexity_fd_petrosian(signal)
+            complexity[u"Fractal_Dimension_Petrosian"] = complexity_fd_petrosian(signal)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute petrosian.")
-            complexity["Fractal_Dimension_Petrosian"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute petrosian."
+            complexity[u"Fractal_Dimension_Petrosian"] = np.nan
 
 # ------------------------------------------------------------------------------
 
     # Fisher
     if fisher is True:
         try:
-            complexity["Fisher_Information"] = complexity_fisher_info(signal, tau=tau, emb_dim=emb_dim)
+            complexity[u"Fisher_Information"] = complexity_fisher_info(signal, tau=tau, emb_dim=emb_dim)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute Fisher Information.")
-            complexity["Fisher_Information"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute Fisher Information."
+            complexity[u"Fisher_Information"] = np.nan
 
 
     # Hurst
     if hurst is True:
         try:
-            complexity["Hurst"] = nolds.hurst_rs(signal, nvals=None, fit="RANSAC", debug_plot=False, plot_file=None)
+            complexity[u"Hurst"] = nolds.hurst_rs(signal, nvals=None, fit=u"RANSAC", debug_plot=False, plot_file=None)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute hurst.")
-            complexity["Hurst"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute hurst."
+            complexity[u"Hurst"] = np.nan
 
     # DFA
     if dfa is True:
         try:
-            complexity["DFA"] = nolds.dfa(signal, nvals=None, overlap=True, order=1, fit_trend="poly", fit_exp="RANSAC", debug_plot=False, plot_file=None)
+            complexity[u"DFA"] = nolds.dfa(signal, nvals=None, overlap=True, order=1, fit_trend=u"poly", fit_exp=u"RANSAC", debug_plot=False, plot_file=None)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute dfa.")
-            complexity["DFA"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute dfa."
+            complexity[u"DFA"] = np.nan
 
     # Lyap_r
     if lyap_r is True:
         try:
-            complexity["Lyapunov_R"] = nolds.lyap_r(signal, emb_dim=10, lag=None, min_tsep=None, tau=tau, min_vectors=20, trajectory_len=20, fit="RANSAC", debug_plot=False, plot_file=None)
+            complexity[u"Lyapunov_R"] = nolds.lyap_r(signal, emb_dim=10, lag=None, min_tsep=None, tau=tau, min_vectors=20, trajectory_len=20, fit=u"RANSAC", debug_plot=False, plot_file=None)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute lyap_r.")
-            complexity["Lyapunov_R"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute lyap_r."
+            complexity[u"Lyapunov_R"] = np.nan
 
     # Lyap_e
     if lyap_e is True:
         try:
             result = nolds.lyap_e(signal, emb_dim=10, matrix_dim=4, min_nb=None, min_tsep=0, tau=tau, debug_plot=False, plot_file=None)
             for i, value in enumerate(result):
-                complexity["Lyapunov_E_" + str(i)] = value
+                complexity[u"Lyapunov_E_" + unicode(i)] = value
         except:
-            print("NeuroKit warning: complexity(): Failed to compute lyap_e.")
-            complexity["Lyapunov_E"] = np.nan
+            print u"NeuroKit warning: complexity(): Failed to compute lyap_e."
+            complexity[u"Lyapunov_E"] = np.nan
 
     return(complexity)
 
@@ -255,7 +258,7 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
 # ==============================================================================
 # ==============================================================================
 def complexity_entropy_shannon(signal):
-    """
+    u"""
     Computes the shannon entropy. Copied from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ repo by tjugo.
 
     Parameters
@@ -301,7 +304,7 @@ def complexity_entropy_shannon(signal):
     - None
     """
      # Check if string
-    if not isinstance(signal, str):
+    if not isinstance(signal, unicode):
         signal = list(signal)
 
     signal = np.array(signal)
@@ -336,8 +339,8 @@ def complexity_entropy_shannon(signal):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def complexity_entropy_multiscale(signal, emb_dim=2, tolerance="default"):
-    """
+def complexity_entropy_multiscale(signal, emb_dim=2, tolerance=u"default"):
+    u"""
     Computes the Multiscale Entropy. Copied from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ repo by tjugo. Uses sample entropy with 'chebychev' distance.
 
     Parameters
@@ -387,18 +390,18 @@ def complexity_entropy_multiscale(signal, emb_dim=2, tolerance="default"):
     - Richman, J. S., & Moorman, J. R. (2000). Physiological time-series analysis using approximate entropy and sample entropy. American Journal of Physiology-Heart and Circulatory Physiology, 278(6), H2039-H2049.
     - Costa, M., Goldberger, A. L., & Peng, C. K. (2005). Multiscale entropy analysis of biological signals. Physical review E, 71(2), 021906.
     """
-    if tolerance == "default":
+    if tolerance == u"default":
         tolerance = 0.2*np.std(signal)
 
     n = len(signal)
     mse = np.zeros((1, emb_dim))
 
-    for i in range(emb_dim):
+    for i in xrange(emb_dim):
 
         b = int(np.fix(n / (i + 1)))
         temp_ts = [0] * int(b)
 
-        for j in range(b):
+        for j in xrange(b):
             num = sum(signal[j * (i + 1): (j + 1) * (i + 1)])
             den = i + 1
             temp_ts[j] = float(num) / float(den)
@@ -406,9 +409,9 @@ def complexity_entropy_multiscale(signal, emb_dim=2, tolerance="default"):
 #        se = sample_entropy(temp_ts, 1, tolerance)
 
         try:
-            se = nolds.sampen(temp_ts, 1, tolerance, dist="euclidean", debug_plot=False, plot_file=None)
+            se = nolds.sampen(temp_ts, 1, tolerance, dist=u"euclidean", debug_plot=False, plot_file=None)
         except:
-            se = nolds.sampen(temp_ts, 1, tolerance, dist="euler", debug_plot=False, plot_file=None)
+            se = nolds.sampen(temp_ts, 1, tolerance, dist=u"euler", debug_plot=False, plot_file=None)
 
 
         mse[0, i] = se
@@ -428,7 +431,7 @@ def complexity_entropy_multiscale(signal, emb_dim=2, tolerance="default"):
 # ==============================================================================
 # ==============================================================================
 def complexity_fd_higushi(signal, k_max):
-    """
+    u"""
     Computes Higuchi Fractal Dimension of a signal. Based on the `pyrem <https://github.com/gilestrolab/pyrem>`_ repo by Quentin Geissmann.
 
     Parameters
@@ -485,9 +488,9 @@ def complexity_fd_higushi(signal, k_max):
     km_idxs[:,1] -= 1
 
 
-    for k in range(1, k_max):
+    for k in xrange(1, k_max):
         Lk = 0
-        for m in range(0, k):
+        for m in xrange(0, k):
             #we pregenerate all idxs
             idxs = np.arange(1,int(np.floor((N-m)/k)))
 
@@ -513,7 +516,7 @@ def complexity_fd_higushi(signal, k_max):
 # ==============================================================================
 # ==============================================================================
 def complexity_entropy_spectral(signal, sampling_rate, bands=None):
-    """
+    u"""
     Computes Spectral Entropy of a signal. Based on the `pyrem <https://github.com/gilestrolab/pyrem>`_ repo by Quentin Geissmann. The power spectrum is computed through fft. Then, it is normalised and assimilated to a probability density function.
 
     Parameters
@@ -571,7 +574,7 @@ def complexity_entropy_spectral(signal, sampling_rate, bands=None):
         freq_limits_up = np.concatenate([bands, [np.Inf]])
 
         power_per_band = [np.sum(psd[np.bitwise_and(freqs >= low, freqs<up)])
-                for low,up in zip(freq_limits_low, freq_limits_up)]
+                for low,up in izip(freq_limits_low, freq_limits_up)]
 
         power_per_band= np.array(power_per_band)[np.array(power_per_band) > 0]
 
@@ -590,15 +593,15 @@ def _embed_seq(signal, tau, emb_dim):
     N =len(signal)
 
     if emb_dim * tau > N:
-        raise ValueError("Cannot build such a matrix, because D * Tau > N")
+        raise ValueError(u"Cannot build such a matrix, because D * Tau > N")
 
     if tau<1:
-        raise ValueError("Tau has to be at least 1")
+        raise ValueError(u"Tau has to be at least 1")
 
 
     Y=np.zeros((emb_dim, N - (emb_dim - 1) * tau))
 
-    for i in range(emb_dim):
+    for i in xrange(emb_dim):
         Y[i] = signal[i *tau : i*tau + Y.shape[1] ]
 
     return(Y.T)
@@ -613,7 +616,7 @@ def _embed_seq(signal, tau, emb_dim):
 # ==============================================================================
 # ==============================================================================
 def complexity_entropy_svd(signal, tau=1, emb_dim=2):
-    """
+    u"""
     Computes the Singular Value Decomposition (SVD) entropy of a signal. Based on the `pyrem <https://github.com/gilestrolab/pyrem>`_ repo by Quentin Geissmann.
 
     Parameters
@@ -674,7 +677,7 @@ def complexity_entropy_svd(signal, tau=1, emb_dim=2):
 # ==============================================================================
 # ==============================================================================
 def complexity_fd_petrosian(signal):
-    """
+    u"""
     Computes the Petrosian Fractal Dimension of a signal. Based on the `pyrem <https://github.com/gilestrolab/pyrem>`_ repo by Quentin Geissmann.
 
     Parameters
@@ -734,7 +737,7 @@ def complexity_fd_petrosian(signal):
 # ==============================================================================
 # ==============================================================================
 def complexity_fisher_info(signal, tau=1, emb_dim=2):
-    """
+    u"""
     Computes the Fisher information of a signal. Based on the `pyrem <https://github.com/gilestrolab/pyrem>`_ repo by Quentin Geissmann.
 
     Parameters

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
+from __future__ import absolute_import
 from ..miscellaneous import Time
 from ..miscellaneous import find_following_duplicates
 
@@ -17,8 +19,8 @@ import pandas as pd
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_complexity(eeg, sampling_rate, times=None, index=None, include="all", exclude=None, hemisphere="both", central=True, verbose=True, shannon=True, sampen=True, multiscale=True, spectral=True, svd=True, correlation=True, higushi=True, petrosian=True, fisher=True, hurst=True, dfa=True, lyap_r=False, lyap_e=False, names="Complexity"):
-    """
+def eeg_complexity(eeg, sampling_rate, times=None, index=None, include=u"all", exclude=None, hemisphere=u"both", central=True, verbose=True, shannon=True, sampen=True, multiscale=True, spectral=True, svd=True, correlation=True, higushi=True, petrosian=True, fisher=True, hurst=True, dfa=True, lyap_r=False, lyap_e=False, names=u"Complexity"):
+    u"""
     Compute complexity indices of epochs or raw object.
 
     DOCS INCOMPLETE :(
@@ -42,11 +44,11 @@ def eeg_complexity(eeg, sampling_rate, times=None, index=None, include="all", ex
 
 
     # Deal with names
-    if isinstance(names, str):
+    if isinstance(names, unicode):
         prefix = [names] * len(times)
         if len(times) > 1:
             for time_index, time_window in enumerate(times):
-                prefix[time_index] = prefix[time_index] + "_%.2f_%.2f" %(time_window[0], time_window[1])
+                prefix[time_index] = prefix[time_index] + u"_%.2f_%.2f" %(time_window[0], time_window[1])
     else:
         prefix = names
 
@@ -55,14 +57,14 @@ def eeg_complexity(eeg, sampling_rate, times=None, index=None, include="all", ex
     complexity_all = pd.DataFrame()
     for time_index, time_window in enumerate(times):
         if len(times) > 1 and verbose is True:
-            print("Computing complexity features... window " + str(time_window) + "/" + str(len(times)))
+            print u"Computing complexity features... window " + unicode(time_window) + u"/" + unicode(len(times))
 
         complexity_features = {}
         # Compute complexity for each channel for each epoch
         index = 0
         for epoch_index, epoch in data.items():
             if len(times) == 1 and verbose is True:
-                print("Computing complexity features... " + str(round(index/len(data.items())*100, 2)) + "%")
+                print u"Computing complexity features... " + unicode(round(index/len(data.items())*100, 2)) + u"%"
             index +=1
 
             df = epoch[time_window[0]:time_window[1]].copy()
@@ -84,8 +86,8 @@ def eeg_complexity(eeg, sampling_rate, times=None, index=None, include="all", ex
                 complexity_features[epoch_index][feature] = pd.Series(complexity_features[epoch_index][feature]).mean()
 
         # Convert to dataframe
-        complexity_features = pd.DataFrame.from_dict(complexity_features, orient="index")
-        complexity_features.columns = [prefix[time_index] + "_" + s for s in complexity_features.columns]
+        complexity_features = pd.DataFrame.from_dict(complexity_features, orient=u"index")
+        complexity_features.columns = [prefix[time_index] + u"_" + s for s in complexity_features.columns]
 
 
         complexity_all = pd.concat([complexity_all, complexity_features], axis=1)

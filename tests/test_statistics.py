@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import pytest
 import doctest
 import numpy as np
@@ -29,10 +30,10 @@ def test_normal_range():
 #==============================================================================
 def test_compute_dprime():
     parameters = nk.compute_dprime(n_Hit=7, n_Miss=4, n_FA=6, n_CR=6)
-    assert np.round(parameters["bppd"], 2) == -0.5
+    assert np.round(parameters[u"bppd"], 2) == -0.5
 
 def test_compute_BMI():
-    assert round(nk.compute_BMI(182, 70, 27, "m")['BMI_old'], 2) == 21.13
+    assert round(nk.compute_BMI(182, 70, 27, u"m")[u'BMI_old'], 2) == 21.13
 
 def test_compute_interoceptive_accuracy():
     assert nk.compute_interoceptive_accuracy(5, 3) == 0.5
@@ -46,7 +47,7 @@ def test_compute_interoceptive_accuracy():
 
 
 
-if __name__ == '__main__':
+if __name__ == u'__main__':
     pytest.main()
     doctest.testmod()
 

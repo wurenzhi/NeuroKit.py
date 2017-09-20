@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
+from __future__ import absolute_import
 import numpy as np
 import pandas as pd
 import scipy
@@ -16,7 +18,7 @@ import scipy.stats
 # ==============================================================================
 # ==============================================================================
 def compute_dprime(n_Hit=None, n_Miss=None, n_FA=None, n_CR=None):
-    """
+    u"""
     Computes the d', beta, aprime, b''d and c parameters based on the signal detection theory (SDT). **Feel free to help me expand the documentation of this function with details and interpretation guides.**
 
     Parameters
@@ -121,7 +123,7 @@ def compute_dprime(n_Hit=None, n_Miss=None, n_FA=None, n_CR=None):
 # ==============================================================================
 # ==============================================================================
 def compute_BMI(height, weight, age, sex):
-    """
+    u"""
     Returns the traditional BMI, the 'new' Body Mass Index and estimates the Body Fat Percentage (BFP; Deurenberg et al., 1991).
 
     Parameters
@@ -164,66 +166,66 @@ def compute_BMI(height, weight, age, sex):
     # BMI
     height = height/100
     bmi = {}
-    bmi["BMI_old"] = weight/(height**2)
-    bmi["BMI_new"] = 1.3*weight/height**2.5
-    if bmi["BMI_new"] < 15:
-        bmi["BMI_category"] = "Very severely underweight"
-    if 15 < bmi["BMI_new"] < 16:
-         bmi["BMI_category"] = "Severely underweight"
-    if 16 < bmi["BMI_new"] < 18.5:
-         bmi["BMI_category"] = "Underweight"
-    if 18.5 < bmi["BMI_new"] < 25:
-         bmi["BMI_category"] = "Healthy weight"
-    if 25 < bmi["BMI_new"] < 30:
-         bmi["BMI_category"] = "Overweight"
-    if 30 < bmi["BMI_new"] < 35:
-         bmi["BMI_category"] = "Moderately obese"
-    if 35 < bmi["BMI_new"] < 40:
-         bmi["BMI_category"] = "Severely obese"
-    if bmi["BMI_new"] > 40:
-         bmi["BMI_category"] = "Very severely obese"
+    bmi[u"BMI_old"] = weight/(height**2)
+    bmi[u"BMI_new"] = 1.3*weight/height**2.5
+    if bmi[u"BMI_new"] < 15:
+        bmi[u"BMI_category"] = u"Very severely underweight"
+    if 15 < bmi[u"BMI_new"] < 16:
+         bmi[u"BMI_category"] = u"Severely underweight"
+    if 16 < bmi[u"BMI_new"] < 18.5:
+         bmi[u"BMI_category"] = u"Underweight"
+    if 18.5 < bmi[u"BMI_new"] < 25:
+         bmi[u"BMI_category"] = u"Healthy weight"
+    if 25 < bmi[u"BMI_new"] < 30:
+         bmi[u"BMI_category"] = u"Overweight"
+    if 30 < bmi[u"BMI_new"] < 35:
+         bmi[u"BMI_category"] = u"Moderately obese"
+    if 35 < bmi[u"BMI_new"] < 40:
+         bmi[u"BMI_category"] = u"Severely obese"
+    if bmi[u"BMI_new"] > 40:
+         bmi[u"BMI_category"] = u"Very severely obese"
 
     # BFP
-    if sex.lower() == "m":
+    if sex.lower() == u"m":
         sex = 1
     else:
         sex = 0
 
     if age <= 15:
-        bmi["BFP"] = 1.51*bmi["BMI_old"]-0.70*age-3.6*sex+1.4
+        bmi[u"BFP"] = 1.51*bmi[u"BMI_old"]-0.70*age-3.6*sex+1.4
     else:
-        bmi["BFP"] = 1.20*bmi["BMI_old"] + 0.23*age-10.8*sex-5.4
+        bmi[u"BFP"] = 1.20*bmi[u"BMI_old"] + 0.23*age-10.8*sex-5.4
 
     if sex == 1:
-        if bmi["BFP"] < 2:
-            bmi["BFP_category"] = "Critical"
-        if 2 <= bmi["BFP"] < 6:
-            bmi["BFP_category"] = "Essential"
-        if 6 <= bmi["BFP"] < 13:
-            bmi["BFP_category"] = "Athletic"
-        if 13 <= bmi["BFP"] < 17:
-            bmi["BFP_category"] = "Fitness"
-        if 17 <= bmi["BFP"] < 22:
-            bmi["BFP_category"] = "Average"
-        if 22 <= bmi["BFP"] < 30:
-            bmi["BFP_category"] = "Overweight"
-        if bmi["BFP"] >= 30:
-            bmi["BFP_category"] = "Obese"
+        if bmi[u"BFP"] < 2:
+            bmi[u"BFP_category"] = u"Critical"
+        if 2 <= bmi[u"BFP"] < 6:
+            bmi[u"BFP_category"] = u"Essential"
+        if 6 <= bmi[u"BFP"] < 13:
+            bmi[u"BFP_category"] = u"Athletic"
+        if 13 <= bmi[u"BFP"] < 17:
+            bmi[u"BFP_category"] = u"Fitness"
+        if 17 <= bmi[u"BFP"] < 22:
+            bmi[u"BFP_category"] = u"Average"
+        if 22 <= bmi[u"BFP"] < 30:
+            bmi[u"BFP_category"] = u"Overweight"
+        if bmi[u"BFP"] >= 30:
+            bmi[u"BFP_category"] = u"Obese"
     else:
-        if bmi["BFP"] < 10:
-            bmi["BFP_category"] = "Critical"
-        if 10 <= bmi["BFP"] < 14:
-            bmi["BFP_category"] = "Essential"
-        if 14 <= bmi["BFP"] < 21:
-            bmi["BFP_category"] = "Athletic"
-        if 21 <= bmi["BFP"] < 25:
-            bmi["BFP_category"] = "Fitness"
-        if 25 <= bmi["BFP"] < 31:
-            bmi["BFP_category"] = "Average"
-        if 31 <= bmi["BFP"] < 40:
-            bmi["BFP_category"] = "Overweight"
-        if bmi["BFP"] >= 40:
-            bmi["BFP_category"] = "Obese"
+        if bmi[u"BFP"] < 10:
+            bmi[u"BFP_category"] = u"Critical"
+        if 10 <= bmi[u"BFP"] < 14:
+            bmi[u"BFP_category"] = u"Essential"
+        if 14 <= bmi[u"BFP"] < 21:
+            bmi[u"BFP_category"] = u"Athletic"
+        if 21 <= bmi[u"BFP"] < 25:
+            bmi[u"BFP_category"] = u"Fitness"
+        if 25 <= bmi[u"BFP"] < 31:
+            bmi[u"BFP_category"] = u"Average"
+        if 31 <= bmi[u"BFP"] < 40:
+            bmi[u"BFP_category"] = u"Overweight"
+        if bmi[u"BFP"] >= 40:
+            bmi[u"BFP_category"] = u"Obese"
 
 
 
@@ -241,7 +243,7 @@ def compute_BMI(height, weight, age, sex):
 # ==============================================================================
 # ==============================================================================
 def compute_interoceptive_accuracy(nbeats_real, nbeats_reported):
-    """
+    u"""
     Computes interoceptive accuracy according to Garfinkel et al., (2015).
 
     Parameters

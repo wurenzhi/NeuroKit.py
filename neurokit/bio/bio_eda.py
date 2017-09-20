@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
+from __future__ import absolute_import
 import pandas as pd
 import numpy as np
 import biosppy
@@ -21,8 +23,8 @@ from ..miscellaneous import find_closest_in_list
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eda_process(eda, sampling_rate=1000, alpha=8e-4, gamma=1e-2, scr_method="makowski", scr_treshold=0.1):
-    """
+def eda_process(eda, sampling_rate=1000, alpha=8e-4, gamma=1e-2, scr_method=u"makowski", scr_treshold=0.1):
+    u"""
     Automated processing of EDA signal using convex optimization (CVXEDA; Greco et al., 2015).
 
     Parameters
@@ -89,78 +91,78 @@ def eda_process(eda, sampling_rate=1000, alpha=8e-4, gamma=1e-2, scr_method="mak
     """
     # Initialization
     eda = np.array(eda)
-    eda_df = pd.DataFrame({"EDA_Raw": np.array(eda)})
+    eda_df = pd.DataFrame({u"EDA_Raw": np.array(eda)})
 
     # Preprocessing
     # ===================
     # Filtering
     filtered, _, _ = biosppy.tools.filter_signal(signal=eda,
-                                 ftype='butter',
-                                 band='lowpass',
+                                 ftype=u'butter',
+                                 band=u'lowpass',
                                  order=4,
                                  frequency=5,
                                  sampling_rate=sampling_rate)
 
     # Smoothing
     filtered, _ = biosppy.tools.smoother(signal=filtered,
-                              kernel='boxzen',
+                              kernel=u'boxzen',
                               size=int(0.75 * sampling_rate),
                               mirror=True)
-    eda_df["EDA_Filtered"] = filtered
+    eda_df[u"EDA_Filtered"] = filtered
 
     # Derive Phasic and Tonic
     try:
         tonic, phasic = cvxEDA(eda, sampling_rate=sampling_rate, alpha=alpha, gamma=gamma)
-        eda_df["EDA_Phasic"] = phasic
-        eda_df["EDA_Tonic"] = tonic
+        eda_df[u"EDA_Phasic"] = phasic
+        eda_df[u"EDA_Tonic"] = tonic
         signal = phasic
     except:
-        print("NeuroKit Warning: eda_process(): Error in cvxEDA algorithm, couldn't extract phasic and tonic components. Using raw signal.")
+        print u"NeuroKit Warning: eda_process(): Error in cvxEDA algorithm, couldn't extract phasic and tonic components. Using raw signal."
         signal = eda
 
     # Skin-Conductance Responses
     # ===========================
-    if scr_method == "kim":
+    if scr_method == u"kim":
         onsets, peaks, amplitudes = biosppy.eda.kbk_scr(signal=signal, sampling_rate=sampling_rate, min_amplitude=scr_treshold)
         recoveries = [np.nan]*len(onsets)
 
-    elif scr_method == "gamboa":
+    elif scr_method == u"gamboa":
         onsets, peaks, amplitudes = biosppy.eda.basic_scr(signal=signal, sampling_rate=sampling_rate)
         recoveries = [np.nan]*len(onsets)
 
     else:  # makowski's algorithm
-        onsets, peaks, amplitudes, recoveries = eda_scr(signal, sampling_rate=sampling_rate, treshold=scr_treshold, method="fast")
+        onsets, peaks, amplitudes, recoveries = eda_scr(signal, sampling_rate=sampling_rate, treshold=scr_treshold, method=u"fast")
 
 
     # Store SCR onsets and recoveries positions
     scr_onsets = np.array([np.nan]*len(signal))
     if len(onsets) > 0:
         scr_onsets[onsets] = 1
-    eda_df["SCR_Onsets"] = scr_onsets
+    eda_df[u"SCR_Onsets"] = scr_onsets
 
     scr_recoveries = np.array([np.nan]*len(signal))
     if len(recoveries) > 0:
         scr_recoveries[recoveries[pd.notnull(recoveries)].astype(int)] = 1
-    eda_df["SCR_Recoveries"] = scr_recoveries
+    eda_df[u"SCR_Recoveries"] = scr_recoveries
 
     # Store SCR peaks and amplitudes
     scr_peaks = np.array([np.nan]*len(eda))
     peak_index = 0
-    for index in range(len(scr_peaks)):
+    for index in xrange(len(scr_peaks)):
         try:
             if index == peaks[peak_index]:
                 scr_peaks[index] = amplitudes[peak_index]
                 peak_index += 1
         except:
             pass
-    eda_df["SCR_Peaks"] = scr_peaks
+    eda_df[u"SCR_Peaks"] = scr_peaks
 
-    processed_eda = {"df": eda_df,
-                     "EDA": {
-                            "SCR_Onsets": onsets,
-                            "SCR_Peaks_Indexes": peaks,
-                            "SCR_Recovery_Indexes": recoveries,
-                            "SCR_Peaks_Amplitudes": amplitudes}}
+    processed_eda = {u"df": eda_df,
+                     u"EDA": {
+                            u"SCR_Onsets": onsets,
+                            u"SCR_Peaks_Indexes": peaks,
+                            u"SCR_Recovery_Indexes": recoveries,
+                            u"SCR_Peaks_Amplitudes": amplitudes}}
     return(processed_eda)
 
 
@@ -175,8 +177,8 @@ def eda_process(eda, sampling_rate=1000, alpha=8e-4, gamma=1e-2, scr_method="mak
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def cvxEDA(eda, sampling_rate=1000, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, gamma=1e-2, solver=None, verbose=False, options={'reltol':1e-9}):
-    """
+def cvxEDA(eda, sampling_rate=1000, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, gamma=1e-2, solver=None, verbose=False, options={u'reltol':1e-9}):
+    u"""
     A convex optimization approach to electrodermal activity processing (CVXEDA).
 
     This function implements the cvxEDA algorithm described in "cvxEDA: a
@@ -257,7 +259,7 @@ def cvxEDA(eda, sampling_rate=1000, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-
     # spline
     delta_knot_s = int(round(delta_knot / frequency))
     spl = np.r_[np.arange(1.,delta_knot_s), np.arange(delta_knot_s, 0., -1.)] # order 1
-    spl = np.convolve(spl, spl, 'full')
+    spl = np.convolve(spl, spl, u'full')
     spl /= max(spl)
     # matrix of spline regressors
     i = np.c_[np.arange(-(len(spl)//2), (len(spl)+1)//2)] + np.r_[np.arange(0, n, delta_knot_s)]
@@ -276,36 +278,36 @@ def cvxEDA(eda, sampling_rate=1000, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-
     # s.t. A*q >= 0
 
     if verbose is False:
-        options["show_progress"] = False
+        options[u"show_progress"] = False
     old_options = cv.solvers.options.copy()
     cv.solvers.options.clear()
     cv.solvers.options.update(options)
-    if solver == 'conelp':
+    if solver == u'conelp':
         # Use conelp
         z = lambda m,n: cv.spmatrix([],[],[],(m,n))
         G = cv.sparse([[-A,z(2,n),M,z(nB+2,n)],[z(n+2,nC),C,z(nB+2,nC)],
                     [z(n,1),-1,1,z(n+nB+2,1)],[z(2*n+2,1),-1,1,z(nB,1)],
-                    [z(n+2,nB),B,z(2,nB),cv.spmatrix(1.0, range(nB), range(nB))]])
+                    [z(n+2,nB),B,z(2,nB),cv.spmatrix(1.0, xrange(nB), xrange(nB))]])
         h = cv.matrix([z(n,1),.5,.5,eda,.5,.5,z(nB,1)])
         c = cv.matrix([(cv.matrix(alpha, (1,n)) * A).T,z(nC,1),1,gamma,z(nB,1)])
-        res = cv.solvers.conelp(c, G, h, dims={'l':n,'q':[n+2,nB+2],'s':[]})
-        obj = res['primal objective']
+        res = cv.solvers.conelp(c, G, h, dims={u'l':n,u'q':[n+2,nB+2],u's':[]})
+        obj = res[u'primal objective']
     else:
         # Use qp
         Mt, Ct, Bt = M.T, C.T, B.T
         H = cv.sparse([[Mt*M, Ct*M, Bt*M], [Mt*C, Ct*C, Bt*C],
-                    [Mt*B, Ct*B, Bt*B+gamma*cv.spmatrix(1.0, range(nB), range(nB))]])
+                    [Mt*B, Ct*B, Bt*B+gamma*cv.spmatrix(1.0, xrange(nB), xrange(nB))]])
         f = cv.matrix([(cv.matrix(alpha, (1,n)) * A).T - Mt*eda,  -(Ct*eda), -(Bt*eda)])
         res = cv.solvers.qp(H, f, cv.spmatrix(-A.V, A.I, A.J, (n,len(f))),
                             cv.matrix(0., (n,1)), solver=solver)
-        obj = res['primal objective'] + .5 * (eda.T * eda)
+        obj = res[u'primal objective'] + .5 * (eda.T * eda)
     cv.solvers.options.clear()
     cv.solvers.options.update(old_options)
 
-    l = res['x'][-nB:]
-    d = res['x'][n:n+nC]
+    l = res[u'x'][-nB:]
+    d = res[u'x'][n:n+nC]
     tonic = B*l + C*d
-    q = res['x'][:n]
+    q = res[u'x'][:n]
     p = A * q
     phasic = M * q
     e = eda - phasic - tonic
@@ -325,8 +327,8 @@ def cvxEDA(eda, sampling_rate=1000, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eda_scr(signal, sampling_rate=1000, treshold=0.1, method="fast"):
-    """
+def eda_scr(signal, sampling_rate=1000, treshold=0.1, method=u"fast"):
+    u"""
     Skin-Conductance Responses extraction algorithm.
 
     Parameters
@@ -377,12 +379,12 @@ def eda_scr(signal, sampling_rate=1000, treshold=0.1, method="fast"):
     """
     # Processing
     # ===========
-    if method == "slow":
+    if method == u"slow":
         # Compute gradient (sort of derivative)
         gradient = np.gradient(signal)
         # Smoothing
         size = int(0.1 * sampling_rate)
-        smooth, _ = biosppy.tools.smoother(signal=gradient, kernel='bartlett', size=size, mirror=True)
+        smooth, _ = biosppy.tools.smoother(signal=gradient, kernel=u'bartlett', size=size, mirror=True)
         # Find zero-crossings
         zeros, = biosppy.tools.zero_cross(signal=smooth, detrend=True)
 
@@ -396,8 +398,8 @@ def eda_scr(signal, sampling_rate=1000, treshold=0.1, method="fast"):
                 peaks.append(i)
     else:
         # find extrema
-        peaks, _ = biosppy.tools.find_extrema(signal=signal, mode='max')
-        onsets, _ = biosppy.tools.find_extrema(signal=signal, mode='min')
+        peaks, _ = biosppy.tools.find_extrema(signal=signal, mode=u'max')
+        onsets, _ = biosppy.tools.find_extrema(signal=signal, mode=u'min')
 
 
     # Keep only pairs
@@ -431,7 +433,7 @@ def eda_scr(signal, sampling_rate=1000, treshold=0.1, method="fast"):
             window = signal[peak:]
         recovery_amp = signal[peak]-amplitudes[x]/2
         try:
-            smaller = find_closest_in_list(recovery_amp, window, "smaller")
+            smaller = find_closest_in_list(recovery_amp, window, u"smaller")
             recovery_pos = peak + list(window).index(smaller)
             recoveries.append(recovery_pos)
         except ValueError:
@@ -450,7 +452,7 @@ def eda_scr(signal, sampling_rate=1000, treshold=0.1, method="fast"):
 # ==============================================================================
 # ==============================================================================
 def eda_EventRelated(epoch, event_length, window_post=4):
-    """
+    u"""
     Extract event-related EDA and Skin Conductance Response (SCR).
 
     Parameters
@@ -519,26 +521,26 @@ def eda_EventRelated(epoch, event_length, window_post=4):
 
     # Sanity check
     if epoch.index[-1]-event_length < 1:
-        print("NeuroKit Warning: eda_EventRelated(): your epoch only lasts for about %.2f s post stimulus. You might lose some SCRs." %(epoch.index[-1]-event_length))
+        print u"NeuroKit Warning: eda_EventRelated(): your epoch only lasts for about %.2f s post stimulus. You might lose some SCRs." %(epoch.index[-1]-event_length)
 
 
     # EDA Based
     # =================
     # This is a basic and bad model
-    if "EDA_Filtered" in epoch.columns:
-        baseline = epoch["EDA_Filtered"][0:1].min()
-        eda_peak = epoch["EDA_Filtered"][1:window_end].max()
-        EDA_Response["EDA_Peak"] = eda_peak - baseline
+    if u"EDA_Filtered" in epoch.columns:
+        baseline = epoch[u"EDA_Filtered"][0:1].min()
+        eda_peak = epoch[u"EDA_Filtered"][1:window_end].max()
+        EDA_Response[u"EDA_Peak"] = eda_peak - baseline
 
 
     # SCR Based
     # =================
-    if "SCR_Onsets" in epoch.columns:
+    if u"SCR_Onsets" in epoch.columns:
         # Computation
-        peak_onset = epoch["SCR_Onsets"][1:window_end].idxmax()
+        peak_onset = epoch[u"SCR_Onsets"][1:window_end].idxmax()
         if pd.notnull(peak_onset):
-            amplitude = epoch["SCR_Peaks"][peak_onset:window_end].max()
-            peak_time = epoch["SCR_Peaks"][peak_onset:window_end].idxmax()
+            amplitude = epoch[u"SCR_Peaks"][peak_onset:window_end].max()
+            peak_time = epoch[u"SCR_Peaks"][peak_onset:window_end].idxmax()
 
             if pd.isnull(amplitude):
                 magnitude = 0
@@ -550,7 +552,7 @@ def eda_EventRelated(epoch, event_length, window_post=4):
                 strength = magnitude/risetime
             else:
                 strength = np.nan
-            recovery = epoch["SCR_Recoveries"][peak_time:window_end].idxmax() - peak_time
+            recovery = epoch[u"SCR_Recoveries"][peak_time:window_end].idxmax() - peak_time
 
         else:
             amplitude = np.nan
@@ -561,15 +563,15 @@ def eda_EventRelated(epoch, event_length, window_post=4):
             recovery = np.nan
 
         # Storage
-        EDA_Response["SCR_Amplitude"] = amplitude
-        EDA_Response["SCR_Magnitude"] = magnitude
-        EDA_Response["SCR_Amplitude_Log"] = np.log(1+amplitude)
-        EDA_Response["SCR_Magnitude_Log"] = np.log(1+magnitude)
-        EDA_Response["SCR_Latency"] = peak_onset
-        EDA_Response["SCR_PeakTime"] = peak_time
-        EDA_Response["SCR_RiseTime"] = risetime
-        EDA_Response["SCR_Strength"] = strength  # Experimental
-        EDA_Response["SCR_RecoveryTime"] = recovery
+        EDA_Response[u"SCR_Amplitude"] = amplitude
+        EDA_Response[u"SCR_Magnitude"] = magnitude
+        EDA_Response[u"SCR_Amplitude_Log"] = np.log(1+amplitude)
+        EDA_Response[u"SCR_Magnitude_Log"] = np.log(1+magnitude)
+        EDA_Response[u"SCR_Latency"] = peak_onset
+        EDA_Response[u"SCR_PeakTime"] = peak_time
+        EDA_Response[u"SCR_RiseTime"] = risetime
+        EDA_Response[u"SCR_Strength"] = strength  # Experimental
+        EDA_Response[u"SCR_RecoveryTime"] = recovery
 
 
 

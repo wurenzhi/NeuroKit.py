@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import with_statement
+from __future__ import absolute_import
 import time as builtin_time
 import pandas as pd
 import numpy as np
@@ -7,6 +9,7 @@ import platform
 import os
 import pickle
 import gzip
+from io import open
 
 
 
@@ -19,8 +22,8 @@ import gzip
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def save_nk_object(obj, filename="file", path="", extension="nk", compress=False, compatibility=-1):
-    """
+def save_nk_object(obj, filename=u"file", path=u"", extension=u"nk", compress=False, compatibility=-1):
+    u"""
     Save whatever python object to a pickled file.
 
     Parameters
@@ -57,10 +60,10 @@ def save_nk_object(obj, filename="file", path="", extension="nk", compress=False
     - gzip
     """
     if compress is True:
-        with gzip.open(path + filename + "." + extension, 'wb') as name:
+        with gzip.open(path + filename + u"." + extension, u'wb') as name:
             pickle.dump(obj, name, protocol=compatibility)
     else:
-        with open(path + filename + "." + extension, 'wb') as name:
+        with open(path + filename + u"." + extension, u'wb') as name:
             pickle.dump(obj, name, protocol=compatibility)
 # ==============================================================================
 # ==============================================================================
@@ -70,8 +73,8 @@ def save_nk_object(obj, filename="file", path="", extension="nk", compress=False
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def read_nk_object(filename, path=""):
-    """
+def read_nk_object(filename, path=u""):
+    u"""
     Read a pickled file.
 
     Parameters
@@ -100,10 +103,10 @@ def read_nk_object(filename, path=""):
     - gzip
     """
     try:
-        with open(filename, 'rb') as name:
+        with open(filename, u'rb') as name:
             file = pickle.load(name)
     except pickle.UnpicklingError:
-        with gzip.open(filename, 'rb') as name:
+        with gzip.open(filename, u'rb') as name:
             file = pickle.load(name)
     return(file)
 
@@ -116,7 +119,7 @@ def read_nk_object(filename, path=""):
 # ==============================================================================
 # ==============================================================================
 def find_creation_date(path):
-    """
+    u"""
     Try to get the date that a file was created, falling back to when it was last modified if that's not possible.
 
     Parameters
@@ -155,12 +158,12 @@ def find_creation_date(path):
     - http://stackoverflow.com/a/39501288/1709587
 
     """
-    if platform.system() == 'Windows':
+    if platform.system() == u'Windows':
         return(os.path.getctime(path))
     else:
         stat = os.stat(path)
         try:
             return(stat.st_birthtime)
         except AttributeError:
-            print("Neuropsydia error: get_creation_date(): We're probably on Linux. No easy way to get creation dates here, so we'll settle for when its content was last modified.")
+            print u"Neuropsydia error: get_creation_date(): We're probably on Linux. No easy way to get creation dates here, so we'll settle for when its content was last modified."
             return(stat.st_mtime)

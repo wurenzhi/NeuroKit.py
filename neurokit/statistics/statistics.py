@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
+from __future__ import absolute_import
 import numpy as np
 import pandas as pd
 import scipy
@@ -13,7 +15,7 @@ import scipy.stats
 # ==============================================================================
 # ==============================================================================
 def mad(var, constant=1):
-    """
+    u"""
     Median Absolute Deviation: a "robust" version of standard deviation.
 
     Parameters
@@ -68,7 +70,7 @@ def mad(var, constant=1):
 # ==============================================================================
 # ==============================================================================
 def z_score(raw_scores, center=True, scale=True):
-    """
+    u"""
     Transform an array, serie or list into Z scores (scaled and centered scores).
 
     Parameters
@@ -123,7 +125,7 @@ def z_score(raw_scores, center=True, scale=True):
 # ==============================================================================
 # ==============================================================================
 def find_outliers(data, treshold=2.58):
-    """
+    u"""
     Identify outliers (abnormal values) using the standart deviation.
 
     Parameters
@@ -178,7 +180,7 @@ def find_outliers(data, treshold=2.58):
 # ==============================================================================
 # ==============================================================================
 def normal_range(mean, sd, treshold=1.28):
-    """
+    u"""
     Returns a bottom and a top limit on a normal distribution portion based on a treshold.
 
     Parameters
