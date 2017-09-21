@@ -16,6 +16,7 @@ from .bio_rsp import *
 from ..signal import *
 from ..materials import Path
 from ..statistics import *
+from ..statistics.recurrence_plot import recurrence_plot_features
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -650,6 +651,8 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=[u"time", u"frequency", u"n
             hrv[u"Lyapunov"] = np.nan
         hrv[u"FD_Petrosian"] = complexity_fd_petrosian(RRis)
         hrv[u"FD_Higushi"] = complexity_fd_higushi(RRis, k_max=16)
+        hrv = dict(hrv.items() + recurrence_plot_features(RRis.dropna().values , threshold=0.1, dim=1, tau=10).items())
+
 
     # TO DO:
     # Include many others (see Voss 2015)

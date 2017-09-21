@@ -11,6 +11,7 @@ import mne
 import scipy
 
 from ..signal import *
+from ..statistics.recurrence_plot import recurrence_plot_features
 
 # ==============================================================================
 # ==============================================================================
@@ -131,6 +132,9 @@ def rsp_process(rsp, sampling_rate=1000):
     processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_SD"] = np.std(rsp_diff)
     processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_RMSSD"] = np.sqrt(np.mean(rsp_diff ** 2))
     processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_RMSSD_Log"] = np.log(processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_RMSSD"])
+
+# recurrence plot features
+    processed_rsp["RSP"]['recurrence_plot'] = recurrence_plot_features(processed_rsp['df']['RSP_Rate'].dropna().values)
 
     return(processed_rsp)
 
